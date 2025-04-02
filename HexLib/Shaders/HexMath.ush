@@ -1,0 +1,310 @@
+﻿// Copyright © Mason Stevenson
+// All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted (subject to the limitations in the disclaimer
+// below) provided that the following conditions are met:
+//
+// 1. Redistributions of source code must retain the above copyright notice,
+//    this list of conditions and the following disclaimer.
+//
+// 2. Redistributions in binary form must reproduce the above copyright notice,
+//    this list of conditions and the following disclaimer in the documentation
+//    and/or other materials provided with the distribution.
+//
+// 3. Neither the name of the copyright holder nor the names of its
+//    contributors may be used to endorse or promote products derived from
+//    this software without specific prior written permission.
+//
+// NO EXPRESS OR IMPLIED LICENSES TO ANY PARTY'S PATENT RIGHTS ARE GRANTED BY
+// THIS LICENSE. THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND
+// CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT
+// NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+// PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
+// CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+// EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+// PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+// OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+// WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+// OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+// ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+#pragma once
+
+#define HEX_Q(Vector) (Vector.x)
+#define HEX_R(Vector) (Vector.y)
+#define HEX_S(Vector) (Vector.z)
+
+static const float HEX_SQRT_3 = 1.7320508075688772935274463415059f;
+static const float HEX_HALF_SQRT_3 = 0.86602540378443864676372317075294f;
+// static const float PI = 3.14159265358979323846f; // PI is already defined in Common.ush which appears to be auto-included.
+static const float RAD_30 = PI / 6.0f;
+static const float RAD_60 = PI / 3.0f;
+
+float2 CubeToAxial(float3 CubeCoord)
+{
+	return float2(HEX_Q(CubeCoord), HEX_R(CubeCoord));
+}
+
+float3 AxialToCube(float2 AxialCoord)
+{
+	return float3(HEX_Q(AxialCoord), HEX_R(AxialCoord), -1 * (HEX_Q(AxialCoord) + HEX_R(AxialCoord)));
+}
+
+float2 AxialRound(float2 FractionalCoord)
+{
+	float3 FractionalCoordCube = AxialToCube(FractionalCoord);
+
+	// CubeRound()
+	float Q = round(HEX_Q(FractionalCoordCube));
+	float R = round(HEX_R(FractionalCoordCube));
+	float S = round(HEX_S(FractionalCoordCube));
+
+	float QDiff = abs(Q - HEX_Q(FractionalCoordCube));
+	float RDiff = abs(R - HEX_R(FractionalCoordCube));
+	float SDiff = abs(S - HEX_S(FractionalCoordCube));
+
+	if (QDiff > RDiff && QDiff > SDiff)
+	{
+		Q = -1 * (R + S);
+	}
+	else if (RDiff > SDiff)
+	{
+		R = -1 * (Q + S);
+	}
+
+	return float2(Q, R);
+}
+
+float3 AxialToWorld(float2 AxialCoord, float Size)
+{
+	float X = Size * (1.5 * HEX_R(AxialCoord));
+	float Y = Size * (HEX_SQRT_3 * HEX_Q(AxialCoord) + HEX_HALF_SQRT_3 * HEX_R(AxialCoord));
+	return float3(X, Y, 0.0);
+}
+
+float CenterAngle(float3 HexCenter, float3 WorldCoord)
+{
+	float XPrime = WorldCoord.x - HexCenter.x;
+	float YPrime = WorldCoord.y - HexCenter.y;
+	
+	return atan2(XPrime, YPrime);
+}
+float CenterAngle_DEG(float3 HexCenter, float3 WorldCoord)
+{
+	return degrees(CenterAngle(HexCenter, WorldCoord));
+}
+
+float2 AngleToCorner(float3 HexCenter, float HexSize, float Angle)
+{
+	return float2(HexCenter.x + HexSize * sin(Angle), HexCenter.y + HexSize * cos(Angle));
+}
+float2 AngleToCorner_DEG(float3 HexCenter, float HexSize, float AngleDeg)
+{
+	return float2(HexCenter.x + HexSize * sin(radians(AngleDeg)), HexCenter.y + HexSize * cos(radians(AngleDeg)));
+}
+
+// TODO(): Supposedly, we can use preprocessor directives (like #if IS_FLAT) and tie them to static switch inputs on
+//         the custom node. Consider doing this instead of having separate implementations for pointy and flat.
+
+// pointy implementations ---------------------------------------------------------------------------------------------
+float2 P_WorldToAxial(float3 WorldCoord, float HexSize)
+{
+	float Q = ((HEX_SQRT_3 * HEX_R(WorldCoord)) - HEX_Q(WorldCoord)) / (HexSize * 3.0);
+	float R = (2.0 * HEX_Q(WorldCoord)) / (HexSize * 3.0);
+
+	return AxialRound(float2(Q, R));
+}
+
+float3 P_GetHexCenter(float3 WorldCoord, float HexSize)
+{
+	return AxialToWorld(P_WorldToAxial(WorldCoord, HexSize), HexSize);
+}
+
+/*
+ *	TEST CASES:
+ *		P_NearCornerAngle(-61) = -90
+ *		P_NearCornerAngle(-60) = -30
+ *		P_NearCornerAngle(-31) = -30
+ *		P_NearCornerAngle(-30) = -30
+ *		P_NearCornerAngle(-29) = -30
+ *		P_NearCornerAngle(-1)  = -30
+ *		P_NearCornerAngle(0)   = 30
+ *		P_NearCornerAngle(1)   = 30
+ *		P_NearCornerAngle(29)  = 30
+ *		P_NearCornerAngle(30)  = 30
+ *		P_NearCornerAngle(31)  = 30
+ *		P_NearCornerAngle(59)  = 30
+ *		P_NearCornerAngle(60)  = 90
+ *		P_NearCornerAngle(61)  = 90
+ *		P_NearCornerAngle(89)  = 90
+ *		P_NearCornerAngle(90)  = 90
+ *		P_NearCornerAngle(91)  = 90
+ *		P_NearCornerAngle(119) = 90
+ *		P_NearCornerAngle(120) = 150
+ *		P_NearCornerAngle(121) = 150
+ */
+float P_NearCornerAngle(float Theta)
+{
+	return floor((Theta - RAD_30) / RAD_60 + 0.5) * RAD_60 + RAD_30;
+}
+float P_NearCornerAngle_DEG(float ThetaDeg)
+{
+	// return floor((Theta - 30.0) / 60.0 + 0.5) * 60.0 + 30.0;
+	return degrees(P_NearCornerAngle(radians(ThetaDeg)));
+}
+
+/*
+ *	TEST CASES:
+ *		P_NearCornerAngle(-61) = -30	N/A
+ *		P_NearCornerAngle(-60) = -90	N/A
+ *		P_NearCornerAngle(-31) = -90	N/A
+ *		P_NearCornerAngle(-30) = -90	N/A
+ *		P_NearCornerAngle(-29) =  30	N/A
+ *		P_NearCornerAngle(-1)  =  30	N/A
+ *		P_NearCornerAngle(0)   = -30	N/A
+ *		P_NearCornerAngle(1)   = -30	N/A
+ *		P_NearCornerAngle(29)  = -30	N/A
+ *		P_NearCornerAngle(30)  = 90		N/A
+ *		P_NearCornerAngle(31)  = 90		FAIL
+ *		P_NearCornerAngle(59)  = 90		N/A
+ *		P_NearCornerAngle(60)  = 30		FAIL
+ *		P_NearCornerAngle(61)  = 30		N/A
+ *		P_NearCornerAngle(89)  = 30		N/A
+ *		P_NearCornerAngle(90)  = 150	N/A
+ *		P_NearCornerAngle(91)  = 150	N/A
+ *		P_NearCornerAngle(119) = 150	N/A
+ *		P_NearCornerAngle(120) = 90		N/A
+ *		P_NearCornerAngle(121) = 90		N/A
+ */
+float P_FarCornerAngle(float Theta)
+{
+	float NearCornerRatio = (Theta - RAD_30) / RAD_60;
+	float AbsNearCornerRatio = abs(NearCornerRatio);
+	float NearCornerRatioSign = sign(NearCornerRatio);
+	NearCornerRatioSign = NearCornerRatioSign - (NearCornerRatioSign * NearCornerRatioSign) + 1; // 0 fix
+	float NearCornerFraction = frac(AbsNearCornerRatio);
+
+	// NearCornerRatio with inverse fraction:
+	//   -1.2 -> -1.8
+	//   0.0 -> -1.0
+	//   1.2 -> 1.8
+	//   1.5 -> 1.5
+	//   1.7 -> 1.3
+	float FarCornerRatio = NearCornerRatioSign * (AbsNearCornerRatio + 1.0 - 2.0 * NearCornerFraction);
+	
+	return frac(abs(FarCornerRatio)) == 0.5 ? floor(FarCornerRatio - 0.5) * RAD_60 + RAD_30 : floor(FarCornerRatio + 0.5) * RAD_60 + RAD_30;
+}
+float P_FarCornerAngle_DEG(float Theta)
+{
+	return degrees(P_FarCornerAngle(radians(Theta)));
+}
+
+float4 P_GetHexEdge(float3 WorldCoord, float HexSize)
+{
+	float3 HexCenter = P_GetHexCenter(WorldCoord, HexSize);
+	float PixelAngle = CenterAngle(HexCenter, WorldCoord);
+	float2 NearCorner = AngleToCorner(HexCenter, HexSize, P_NearCornerAngle(PixelAngle));
+	float2 FarCorner = AngleToCorner(HexCenter, HexSize, P_FarCornerAngle(PixelAngle));
+
+	return float4(NearCorner.x, NearCorner.y, FarCorner.x, FarCorner.y);
+}
+
+uint P_EdgeIndex(float3 WorldCoord, float HexSize)
+{
+	float3 HexCenter = P_GetHexCenter(WorldCoord, HexSize);
+	float PixelAngle = CenterAngle(HexCenter, WorldCoord);
+	PixelAngle = PixelAngle + PI + RAD_30;
+	return uint(trunc(PixelAngle / RAD_60) % 6.0);
+}
+
+float P_CornerEdgeIndex(float3 WorldCoord, float HexSize)
+{
+	float3 HexCenter = P_GetHexCenter(WorldCoord, HexSize);
+	float PixelAngle = CenterAngle(HexCenter, WorldCoord);
+	PixelAngle = (2.0 * P_NearCornerAngle(PixelAngle)) - PixelAngle;
+	PixelAngle = PixelAngle + PI + RAD_30;
+	return uint(trunc(PixelAngle / RAD_60) % 6.0);
+}
+
+uint FormatHexInfoChannel(float InfoChannel)
+{
+	// not 100% sure if it is safe to just convert from float back to uint, but there doesn't seem to be any way of
+	// telling UE to load a texture as a Texture2D<uint>, short of creating your own custom shader outside of the UE
+	// material system.
+	return uint(InfoChannel * 255.0f);
+}
+
+float4 LoadHexInfo(float2 TexCoord, Texture2D<float4> Texture)
+{
+	int3 Location = int3(TexCoord.x, TexCoord.y, 0);
+	return Texture.Load(Location);
+}
+
+float CheckEdgeIndex(uint EdgeIndex, uint EdgeFlags)
+{
+	return (EdgeIndex < 6) && ((1 << EdgeIndex) & EdgeFlags) != 0;
+}
+
+float CheckHighlightType(float4 HexInfo, uint HighlightType)
+{
+	uint InfoChannel = FormatHexInfoChannel(HexInfo.y);
+	return (InfoChannel & 0x7) == HighlightType;
+}
+
+// Transcribed from the DrawLine-2D material function. 
+float HxlbDrawLine2D(float2 Coordinates, float2 Start, float2 End, float LineWidth, float EdgeFalloff)
+{
+	float2 Sub1 = Coordinates - Start;
+	float2 Sub2 = End - Start;
+
+	float Dot1 = dot(Sub1, Sub2);
+	float Dot2 = dot(Sub2, Sub2);
+
+	float2 Sub3 = Sub1 - (saturate(Dot1 / Dot2) * Sub2);
+	
+	float Dist = distance(Sub3, 0.0);
+
+	return 1.0 - saturate((Dist - LineWidth) / (LineWidth * EdgeFalloff));
+}
+
+float P_HexLine(
+	float3 WorldCoord,
+	float HexSize,
+	float4 HexInfo,
+	float LineWidth,
+	float EdgeFalloff
+	)
+{
+	// find hex edge
+	float3 HexCenter = P_GetHexCenter(WorldCoord, HexSize);
+	float PixelAngle = CenterAngle(HexCenter, WorldCoord);
+	float NearCornerAngle = P_NearCornerAngle(PixelAngle);
+	float2 NearCorner = AngleToCorner(HexCenter, HexSize, NearCornerAngle);
+	float2 FarCorner = AngleToCorner(HexCenter, HexSize, P_FarCornerAngle(PixelAngle));
+
+	// find corner edge
+	float2 Midpoint = (NearCorner + FarCorner) / 2;
+	float2 CornerEdgeStart = (2.0f * Midpoint) - HexCenter.xy;
+	float2 CornerEdgeEnd = (2.0f * NearCorner) - CornerEdgeStart;
+
+	// flags
+	uint EdgeFlags = FormatHexInfoChannel(HexInfo.x);
+
+	// compute edge mask
+	float EdgeAngle = PixelAngle + PI + RAD_30;
+	uint EdgeIndex = uint(trunc(EdgeAngle / RAD_60) % 6.0f);
+	float EdgeMask = CheckEdgeIndex(EdgeIndex, EdgeFlags);
+	
+	// compute corner mask
+	float CornerEdgeAngle = (2.0f * NearCornerAngle) - PixelAngle;
+	CornerEdgeAngle = CornerEdgeAngle + PI + RAD_30;
+	uint CornerEdgeIndex = uint(trunc(CornerEdgeAngle / RAD_60) % 6.0f);
+	float CornerMask = CheckEdgeIndex(CornerEdgeIndex, EdgeFlags);
+
+	// Draw main edge + corner piece
+	float EdgeLine = HxlbDrawLine2D(WorldCoord.xy, NearCorner, FarCorner, LineWidth, EdgeFalloff) * EdgeMask;
+	float CornerLine = HxlbDrawLine2D(WorldCoord.xy, CornerEdgeStart, CornerEdgeEnd, LineWidth, EdgeFalloff) * CornerMask;
+
+	return max(EdgeLine, CornerLine);
+}

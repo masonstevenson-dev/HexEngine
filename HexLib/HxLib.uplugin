@@ -1,0 +1,39 @@
+{
+  "FileVersion": 3,
+  "Version": 2,
+  "VersionName": "0.0.2",
+  "EngineVersion": "5.4.0",
+  "FriendlyName": "Hex Engine",
+  "Description": "Custom editor tools for designing hexagonal maps",
+  "Category": "Hex Engine",
+  "CreatedBy": "Mason Stevenson",
+  "CreatedByURL": "https://masonstevenson.dev",
+  "DocsURL": "",
+  "MarketplaceURL": "",
+  "SupportURL": "",
+  "EnabledByDefault": true,
+  "CanContainContent": true,
+  "IsBetaVersion": true,
+  "Modules": [
+    {
+      "Name": "HexLibEditor",
+      "Type": "Editor",
+      "LoadingPhase": "PostEngineInit"
+    },
+    {
+      "Name": "HexLibRuntime",
+      "Type": "Runtime",
+      "LoadingPhase": "Default"
+    }
+  ],
+  "Plugins": [
+    {
+      "Name": "MeshModelingToolset",
+      "Enabled": true
+    },
+    {
+      "Name": "StructUtils",
+      "Enabled": true
+    }
+  ]
+}
