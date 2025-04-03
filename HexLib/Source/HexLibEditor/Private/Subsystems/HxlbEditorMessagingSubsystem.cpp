@@ -32,6 +32,7 @@
 #include "Subsystems/HxlbEditorMessagingSubsystem.h"
 
 #include "HexLibEditorLoggingDefs.h"
+#include "Macros/HexLibLoggingMacros.h"
 
 void UHxlbEditorMessagingSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
@@ -86,7 +87,7 @@ void UHxlbEditorMessagingSubsystem::PublishInternal(FName Channel, FInstancedStr
 		{
 			if (!SubscriberInterface->RouteHexEditorMessage(Channel, MessagePayload))
 			{
-				UE_LOG(LogHxlbEditor, Error, TEXT("Subscriber %s was unable to route message on channel %s. Removing subscriber."), *GetNameSafe(SubscriberObj), *Channel.ToString());
+				HXLB_LOG(LogHxlbEditor, Error, TEXT("Subscriber %s was unable to route message on channel %s. Removing subscriber."), *GetNameSafe(SubscriberObj), *Channel.ToString());
 				CurrentSubscriber.RemoveCurrent();
 			}
 		}

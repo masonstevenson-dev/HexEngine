@@ -43,6 +43,7 @@
 #include "ToolTargetManager.h"
 #include "Editor/MaterialEditor/Public/MaterialEditingLibrary.h"
 #include "FunctionLibraries/HxlbEditorUtils.h"
+#include "Macros/HexLibLoggingMacros.h"
 #include "Subsystems/HxlbEditorMessageChannels.h"
 #include "Subsystems/HxlbEditorMessagingSubsystem.h"
 
@@ -215,7 +216,7 @@ void UHxlbMapSettingsTool::RequestAction(EHxlbMapSettingsToolAction Action)
 {
 	if (PendingAction != EHxlbMapSettingsToolAction::NoAction)
 	{
-		UE_LOG(
+		HXLB_LOG(
 			LogHxlbEditor,
 			Warning,
 			TEXT("UHxlbMapSettingsTool::RequestAction() requested action %s but action %s is pending"),
@@ -327,11 +328,11 @@ void UHxlbMapSettingsTool::RefreshOverlayMaterialParameters()
 		double LandscapeHeightCm = LandscapeActorScale.Z * 512;
 		double HeightOffsetCm = (LandscapeHeightCm / 2) - TargetLandscape->GetActorLocation().Z;
 
-		// UE_LOG(LogHxlbRuntime, Warning, TEXT("Updating landscape material params."));
-		// UE_LOG(LogHxlbRuntime, Warning, TEXT("Landscape resolution is: %d"), LandscapeResolution);
-		// UE_LOG(LogHxlbRuntime, Warning, TEXT("Landscape length in meters is: %lf"), LandscapeLengthCm / 100.0);
-		// UE_LOG(LogHxlbRuntime, Warning, TEXT("Landscape height in meters is: %lf"), LandscapeHeightCm / 100.0);
-		// UE_LOG(LogHxlbRuntime, Warning, TEXT("Landscape height offset in meters is: %lf"), HeightOffsetCm / 100.0);
+		// HXLB_LOG(LogHxlbRuntime, Warning, TEXT("Updating landscape material params."));
+		// HXLB_LOG(LogHxlbRuntime, Warning, TEXT("Landscape resolution is: %d"), LandscapeResolution);
+		// HXLB_LOG(LogHxlbRuntime, Warning, TEXT("Landscape length in meters is: %lf"), LandscapeLengthCm / 100.0);
+		// HXLB_LOG(LogHxlbRuntime, Warning, TEXT("Landscape height in meters is: %lf"), LandscapeHeightCm / 100.0);
+		// HXLB_LOG(LogHxlbRuntime, Warning, TEXT("Landscape height offset in meters is: %lf"), HeightOffsetCm / 100.0);
 	
 		OverlayMaterialInstance->SetScalarParameterValueEditorOnly(HxlbConstants::HexOverlayParam_LandscapeLength, LandscapeLengthCm);
 		OverlayMaterialInstance->SetScalarParameterValueEditorOnly(HxlbConstants::HexOverlayParam_LandscapeHeight, LandscapeHeightCm);
@@ -387,7 +388,7 @@ void UHxlbMapSettingsTool::ApplyPendingAction()
 		PendingAction = EHxlbMapSettingsToolAction::NoAction;
 		break;
 	default:
-		UE_LOG(LogHxlbEditor, Warning, TEXT("Unknown HxlbSettingsToolAction: %s"), *UEnum::GetValueAsString(PendingAction));
+		HXLB_LOG(LogHxlbEditor, Warning, TEXT("Unknown HxlbSettingsToolAction: %s"), *UEnum::GetValueAsString(PendingAction));
 		PendingAction = EHxlbMapSettingsToolAction::NoAction;
 	}
 }

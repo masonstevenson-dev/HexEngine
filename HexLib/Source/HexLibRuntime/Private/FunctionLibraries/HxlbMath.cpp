@@ -32,6 +32,7 @@
 #include "FunctionLibraries/HxlbMath.h"
 
 #include "HexLibRuntimeLoggingDefs.h"
+#include "Macros/HexLibLoggingMacros.h"
 
 FVector UHxlbMath::VectorFloor(FVector Vector)
 {
@@ -127,7 +128,7 @@ FIntPoint UHxlbMath::CartesianToAxial(FVector CartesianCoordinate, double Size, 
 {
 	if (Orientation == EHexOrientation::Undefined || Orientation == EHexOrientation::Flat)
 	{
-		UE_LOG(LogHxlbRuntime, Error, TEXT("Unsupported Hex Orientation: %s"), *UEnum::GetValueAsString(Orientation));
+		HXLB_LOG(LogHxlbRuntime, Error, TEXT("Unsupported Hex Orientation: %s"), *UEnum::GetValueAsString(Orientation));
 	}
 	
 	const double Q = ((FMath::Sqrt(3.0) * CartesianCoordinate.X) - CartesianCoordinate.Y) / (Size * 3.0);
@@ -244,7 +245,7 @@ uint8 UHxlbMath::NeighborEdgeIndex(FIntPoint HexCoord, FIntPoint NeighborCoord, 
 {
 	if (Orientation == EHexOrientation::Undefined || Orientation == EHexOrientation::Flat)
 	{
-		UE_LOG(LogHxlbRuntime, Error, TEXT("Unsupported Hex Orientation: %s"), *UEnum::GetValueAsString(Orientation));
+		HXLB_LOG(LogHxlbRuntime, Error, TEXT("Unsupported Hex Orientation: %s"), *UEnum::GetValueAsString(Orientation));
 	}
 
 	FVector HexWorldCoord = AxialToWorld(HexCoord, Size);
@@ -282,7 +283,7 @@ bool UHxlbMath::AxialToPixelBuffer(FIntPoint AxialCoord, int32 TextureSizeX, int
 	FIntPoint TextureCoord;
 	if (!AxialToTexture(AxialCoord, TextureSizeX, TextureSizeY, TextureCoord, BoundaryOffset))
 	{
-		// UE_LOG(LogHxlbRuntime, Error, TEXT("Invalid texture coord: (%d, %d) from axial coord: (%d, %d). Texture size is: (%d, %d)"),
+		// HXLB_LOG(LogHxlbRuntime, Error, TEXT("Invalid texture coord: (%d, %d) from axial coord: (%d, %d). Texture size is: (%d, %d)"),
 		//	TextureCoord.X, TextureCoord.Y, AxialCoord.X, AxialCoord.Y, TextureSizeX, TextureSizeY);
 		return false;
 	}

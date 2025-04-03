@@ -46,6 +46,7 @@
 #include "Foundation/HxlbHexMap.h"
 #include "FunctionLibraries/HxlbEditorUtils.h"
 #include "FunctionLibraries/HxlbLandscapeUtil.h"
+#include "Macros/HexLibLoggingMacros.h"
 
 using namespace UE::Geometry;
 
@@ -75,7 +76,7 @@ void UHxlbGridTool::Setup()
 
 void UHxlbGridTool::Shutdown(EToolShutdownType ShutdownType)
 {
-	UE_LOG(LogHxlbEditor, Warning, TEXT("HxlbGridTool: Shutting down."));
+	HXLB_LOG(LogHxlbEditor, Warning, TEXT("HxlbGridTool: Shutting down."));
 	
 	ShutdownGridPreview();
 
@@ -227,7 +228,7 @@ void UHxlbGridTool::FinishSetup()
 {
 	if (bIsInitialized)
 	{
-		UE_LOG(LogHxlbEditor, Error, TEXT("Attempted to re-initialize a UHxlbGridTool."));
+		HXLB_LOG(LogHxlbEditor, Error, TEXT("Attempted to re-initialize a UHxlbGridTool."));
 		return;
 	}
 	
@@ -235,7 +236,7 @@ void UHxlbGridTool::FinishSetup()
 
 	CachedManager->OnMapEditorUpdate.AddUniqueDynamic(this, &ThisClass::OnEditorMapChange);
 	
-	UE_LOG(LogHxlbEditor, Log, TEXT("HxlbGridTool: finished setup."));
+	HXLB_LOG(LogHxlbEditor, Log, TEXT("HxlbGridTool: finished setup."));
 	bIsInitialized = true;
 }
 
@@ -369,7 +370,7 @@ void UHxlbGridTool::DrawHexGrid()
 	ULineSetComponent* LineSet = GridPreviewInternal->FindLineSet(HxlbGridToolLocals::GridLineSetID);
 	if (!LineSet)
 	{
-		UE_LOG(LogHxlbEditor, Error, TEXT("UHxlbGridTool::DrawHexGrid(): LineSet %s is missing."), *HxlbGridToolLocals::GridLineSetID);
+		HXLB_LOG(LogHxlbEditor, Error, TEXT("UHxlbGridTool::DrawHexGrid(): LineSet %s is missing."), *HxlbGridToolLocals::GridLineSetID);
 		return;
 	}
 	LineSet->Clear();
@@ -410,7 +411,7 @@ void UHxlbGridTool::DrawHex(
 			}
 			else
 			{
-				UE_LOG(LogHxlbEditor, Error, TEXT("UHxlbGridTool::DrawHex(): Unable to sample landscape height."));
+				HXLB_LOG(LogHxlbEditor, Error, TEXT("UHxlbGridTool::DrawHex(): Unable to sample landscape height."));
 			}
 		}
 

@@ -42,6 +42,7 @@
 #include "Foundation/HxlbTypes.h"
 #include "Kismet/KismetRenderingLibrary.h"
 #include "TextureResource.h"
+#include "Macros/HexLibLoggingMacros.h"
 #include "UObject/ConstructorHelpers.h"
 
 using HexMath = UHxlbMath;
@@ -103,7 +104,7 @@ bool UHxlbHexMapComponent::IsValidAxialCoord(FIntPoint AxialCoord)
 		}
 		else
 		{
-			UE_LOG(LogHxlbRuntime, Error, TEXT("LandscapeHalfLengthCm is not initialized. Skipping landscape bounds check."));
+			HXLB_LOG(LogHxlbRuntime, Error, TEXT("LandscapeHalfLengthCm is not initialized. Skipping landscape bounds check."));
 		}
 	}
 	
@@ -127,7 +128,7 @@ bool UHxlbHexMapComponent::IsValidAxialCoord(FIntPoint AxialCoord)
 			);
 		}
 	default:
-		UE_LOG(LogHxlbRuntime, Error, TEXT("Unknown map shape."));		
+		HXLB_LOG(LogHxlbRuntime, Error, TEXT("Unknown map shape."));		
 	}
 	
 	return false;
@@ -157,7 +158,7 @@ UHxlbHexIteratorWrapper* UHxlbHexMapComponent::GetGridIterator(FIntPoint CameraC
 			return IteratorWrapper;
 		}
 	default:
-		UE_LOG(LogHxlbRuntime, Error, TEXT("Unknown map shape."));		
+		HXLB_LOG(LogHxlbRuntime, Error, TEXT("Unknown map shape."));		
 	}
 
 	return NewObject<UHxlbHexIteratorWrapper>();
@@ -389,12 +390,12 @@ UTextureRenderTarget2D* UHxlbHexMapComponent::GetHexInfoRT()
 	UTextureRenderTarget2D* PerHexDataRT = MapSettings.OverlaySettings.PerHexDataRT.Get();
 	if (!PerHexDataRT)
 	{
-		UE_LOG(LogHxlbRuntime, Error, TEXT("PerHexDataRT is invalid."));
+		HXLB_LOG(LogHxlbRuntime, Error, TEXT("PerHexDataRT is invalid."));
 		return nullptr;
 	}
 	if (PerHexDataRT->RenderTargetFormat != HxlbPackedData::RequiredRTF)
 	{
-		UE_LOG(LogHxlbRuntime, Error,
+		HXLB_LOG(LogHxlbRuntime, Error,
 			TEXT("Expected PerHexData render target to have a format of %s. Instead, got %s"),
 			*UEnum::GetValueAsString(HxlbPackedData::RequiredRTF),
 			*UEnum::GetValueAsString(PerHexDataRT->RenderTargetFormat));
@@ -405,7 +406,7 @@ UTextureRenderTarget2D* UHxlbHexMapComponent::GetHexInfoRT()
 	int32 HexInfoSizeBytes = sizeof(HxlbPackedData::FHexInfo);
 	if (HexInfoSizeBytes != RTFormatSizeBytes)
 	{
-		UE_LOG(LogHxlbRuntime, Error, TEXT("Expected HexInfo struct size in bytes (%d) to match the %s render target format size in bytes (%d)."),
+		HXLB_LOG(LogHxlbRuntime, Error, TEXT("Expected HexInfo struct size in bytes (%d) to match the %s render target format size in bytes (%d)."),
 			HexInfoSizeBytes, *UEnum::GetValueAsString(PerHexDataRT->RenderTargetFormat), RTFormatSizeBytes)
 		return nullptr;
 	}
@@ -445,7 +446,7 @@ void UHxlbHexMapComponent::RefreshGridlines()
 			// due to it calling MemZero() instead of setting each element in a loop.
 			HexInfoBuffer.AddZeroed(BufferSize);
 
-			// UE_LOG(LogHxlbRuntime, Error, TEXT("HexDataBuffer Size: %d,  Max: %d"), HexDataBuffer.Num(), HexDataBuffer.Max());
+			// HXLB_LOG(LogHxlbRuntime, Error, TEXT("HexDataBuffer Size: %d,  Max: %d"), HexDataBuffer.Num(), HexDataBuffer.Max());
 		}
 		
 		TArray<FIntPoint> FullHexes;
@@ -487,11 +488,11 @@ void UHxlbHexMapComponent::RefreshGridlines()
 
 			if (InvalidTextureCoords > 0)
 			{
-				UE_LOG(LogHxlbRuntime, Error, TEXT("HexCoord converts to invalid texture coord (%d)."), InvalidTextureCoords);
+				HXLB_LOG(LogHxlbRuntime, Error, TEXT("HexCoord converts to invalid texture coord (%d)."), InvalidTextureCoords);
 			}
 			if (InvalidBufferIndices > 0)
 			{
-				UE_LOG(LogHxlbRuntime, Error, TEXT("invalid buffer index (%d)."), InvalidBufferIndices);
+				HXLB_LOG(LogHxlbRuntime, Error, TEXT("invalid buffer index (%d)."), InvalidBufferIndices);
 			}
 		}
 
@@ -527,7 +528,7 @@ void UHxlbHexMapComponent::RefreshGridlines()
 					uint8 AdjacentEdgeIndex = HexMath::NeighborEdgeIndex(HexCoord, AdjacentHex, MapSettings.HexSize);
 					if (AdjacentEdgeIndex < 0 || AdjacentEdgeIndex > 5)
 					{
-						UE_LOG(LogHxlbRuntime, Error, TEXT("Invalid edge index"));
+						HXLB_LOG(LogHxlbRuntime, Error, TEXT("Invalid edge index"));
 						continue;
 					}
 
@@ -536,7 +537,7 @@ void UHxlbHexMapComponent::RefreshGridlines()
 
 				if (InvalidBufferIndices > 0)
 				{
-					UE_LOG(LogHxlbRuntime, Error, TEXT("found invalid buffer indices while computing adjacent gridlines (%d)."), InvalidBufferIndices);
+					HXLB_LOG(LogHxlbRuntime, Error, TEXT("found invalid buffer indices while computing adjacent gridlines (%d)."), InvalidBufferIndices);
 				}
 			}
 		}
@@ -544,7 +545,7 @@ void UHxlbHexMapComponent::RefreshGridlines()
 	
 	if (HexInfoBuffer.Num() != BufferSize)
 	{
-		UE_LOG(LogHxlbRuntime, Error, TEXT("Hex info buffer has invalid size!"));
+		HXLB_LOG(LogHxlbRuntime, Error, TEXT("Hex info buffer has invalid size!"));
 		return;
 	}
 
@@ -565,7 +566,7 @@ void UHxlbHexMapComponent::RefreshGridlines()
 			const int32 BlockBytes = GPixelFormats[TextureRHI->GetFormat()].BlockBytes;
 			if (BlockBytes != sizeof(HxlbPackedData::FHexInfo))
 			{
-				UE_LOG(LogHxlbRenderThread, Error, TEXT("Mismatch between hex info texture size and hex info packed data struct."));
+				HXLB_LOG(LogHxlbRenderThread, Error, TEXT("Mismatch between hex info texture size and hex info packed data struct."));
 				return;
 			}
 			int32 SizeX = TextureRHI->GetDesc().Extent.X;
@@ -573,7 +574,7 @@ void UHxlbHexMapComponent::RefreshGridlines()
 			if (SizeX != InRT->SizeX || SizeY != InRT->SizeY)
 			{
 				// Probably not needed to check this, but I'm not sure if it is 100% safe to use these interchangeably.
-				UE_LOG(LogHxlbRenderThread, Error, TEXT("Mismatch between RT size and TextureRHI size."));
+				HXLB_LOG(LogHxlbRenderThread, Error, TEXT("Mismatch between RT size and TextureRHI size."));
 				return;
 			}
 			
@@ -590,11 +591,11 @@ void UHxlbHexMapComponent::RefreshGridlines()
 				// the buffer that we need to account for. If this error ever pops up, implement a copy-by-row approach
 				// that copies the smaller chunk of data (TextureRowStride) and then increments by the larger chunk of
 				// data.
-				UE_LOG(LogHxlbRenderThread, Error, TEXT("BufferRowStride > TextureRowStride."));
+				HXLB_LOG(LogHxlbRenderThread, Error, TEXT("BufferRowStride > TextureRowStride."));
 			}
 			else
 			{
-				UE_LOG(LogHxlbRenderThread, Error, TEXT("BufferRowStride < TextureRowStride."));
+				HXLB_LOG(LogHxlbRenderThread, Error, TEXT("BufferRowStride < TextureRowStride."));
 			}
 			RHICmdList.UnlockTexture2D(TextureRHI, 0, false, false);
 		}
@@ -609,7 +610,7 @@ void UHxlbHexMapComponent::WriteHexInfo(TArray<FIntPoint>& HexCoords, TArray<Hxl
 	}
 	if (HexCoords.Num() != HexInfos.Num())
 	{
-		UE_LOG(LogHxlbRuntime, Error, TEXT("UHxlbHexMapComponent::WriteHexInfo HexCoords.Num() != HexInfos.Num()."));
+		HXLB_LOG(LogHxlbRuntime, Error, TEXT("UHxlbHexMapComponent::WriteHexInfo HexCoords.Num() != HexInfos.Num()."));
 		return;
 	}
 	UTextureRenderTarget2D* PerHexDataRT = GetHexInfoRT();
@@ -649,12 +650,12 @@ void UHxlbHexMapComponent::WriteHexInfo(TArray<FIntPoint>& HexCoords, TArray<Hxl
 
 		if (FailedConversions > 0)
 		{
-			UE_LOG(LogHxlbRuntime, Error, TEXT("UHxlbHexMapComponent::WriteHexInfo failed buffer index conversion (%d). Check for invalid pixel coordinates or invalid buffer index."), FailedConversions);
+			HXLB_LOG(LogHxlbRuntime, Error, TEXT("UHxlbHexMapComponent::WriteHexInfo failed buffer index conversion (%d). Check for invalid pixel coordinates or invalid buffer index."), FailedConversions);
 		}
 
 		if (BufferIndices.Num() != FilteredInfos.Num())
 		{
-			UE_LOG(LogHxlbRuntime, Error, TEXT("Mismatch between BufferIndices.Num() and HexInfos.Num()"));
+			HXLB_LOG(LogHxlbRuntime, Error, TEXT("Mismatch between BufferIndices.Num() and HexInfos.Num()"));
 			return;
 		}
 		
@@ -677,7 +678,7 @@ void UHxlbHexMapComponent::WriteHexInfo(TArray<FIntPoint>& HexCoords, TArray<Hxl
 			const int32 BlockBytes = GPixelFormats[TextureRHI->GetFormat()].BlockBytes;
 			if (BlockBytes != sizeof(HxlbPackedData::FHexInfo))
 			{
-				UE_LOG(LogHxlbRenderThread, Error, TEXT("Mismatch between hex info texture size and hex info packed data struct."));
+				HXLB_LOG(LogHxlbRenderThread, Error, TEXT("Mismatch between hex info texture size and hex info packed data struct."));
 				return;
 			}
 			int32 SizeX = TextureRHI->GetDesc().Extent.X;
@@ -685,7 +686,7 @@ void UHxlbHexMapComponent::WriteHexInfo(TArray<FIntPoint>& HexCoords, TArray<Hxl
 			if (SizeX != InRT->SizeX || SizeY != InRT->SizeY)
 			{
 				// Probably not needed to check this, but I'm not sure if it is 100% safe to use these interchangeably.
-				UE_LOG(LogHxlbRenderThread, Error, TEXT("Mismatch between RT size and TextureRHI size."));
+				HXLB_LOG(LogHxlbRenderThread, Error, TEXT("Mismatch between RT size and TextureRHI size."));
 				return;
 			}
 
@@ -711,20 +712,20 @@ void UHxlbHexMapComponent::WriteHexInfo(TArray<FIntPoint>& HexCoords, TArray<Hxl
 				
 				if (UpdateBuffer.Num() < SizeX * SizeY)
 				{
-					UE_LOG(LogHxlbRenderThread, Error, TEXT("UpdateBuffer is smaller than expected (got: %d want: %d)"), UpdateBuffer.Num(), SizeX * SizeY);
+					HXLB_LOG(LogHxlbRenderThread, Error, TEXT("UpdateBuffer is smaller than expected (got: %d want: %d)"), UpdateBuffer.Num(), SizeX * SizeY);
 					return;
 				}
 			}
 			else if (BufferRowStride > TextureRowStride)
 			{
 				// See comment in RefreshGridlines()
-				UE_LOG(LogHxlbRenderThread, Error, TEXT("BufferRowStride > TextureRowStride."));
+				HXLB_LOG(LogHxlbRenderThread, Error, TEXT("BufferRowStride > TextureRowStride."));
 				RHICmdList.UnlockTexture2D(TextureRHI, 0, false, false);
 				return;
 			}
 			else
 			{
-				UE_LOG(LogHxlbRenderThread, Error, TEXT("BufferRowStride < TextureRowStride."));
+				HXLB_LOG(LogHxlbRenderThread, Error, TEXT("BufferRowStride < TextureRowStride."));
 				RHICmdList.UnlockTexture2D(TextureRHI, 0, false, false);
 				return;
 			}
@@ -744,11 +745,11 @@ void UHxlbHexMapComponent::WriteHexInfo(TArray<FIntPoint>& HexCoords, TArray<Hxl
 			else if (BufferRowStride > TextureRowStride)
 			{
 				// See comment in RefreshGridlines()
-				UE_LOG(LogHxlbRenderThread, Error, TEXT("BufferRowStride > TextureRowStride."));
+				HXLB_LOG(LogHxlbRenderThread, Error, TEXT("BufferRowStride > TextureRowStride."));
 			}
 			else
 			{
-				UE_LOG(LogHxlbRenderThread, Error, TEXT("BufferRowStride < TextureRowStride."));
+				HXLB_LOG(LogHxlbRenderThread, Error, TEXT("BufferRowStride < TextureRowStride."));
 			}
 			RHICmdList.UnlockTexture2D(TextureRHI, 0, false, false);
 		}
@@ -767,7 +768,7 @@ void UHxlbHexMapComponent::WriteHexInfoSingle(FIntPoint HexCoord, HxlbPackedData
 	FIntPoint PixelCoords;
 	if (!HexMath::AxialToTexture(HexCoord, PerHexDataRT->SizeX, PerHexDataRT->SizeY, PixelCoords))
 	{
-		UE_LOG(LogHxlbRuntime, Error, TEXT("UHxlbHexMapComponent::WriteHexInfoSingle invalid pixel coords."));
+		HXLB_LOG(LogHxlbRuntime, Error, TEXT("UHxlbHexMapComponent::WriteHexInfoSingle invalid pixel coords."));
 		return;
 	}
 
@@ -790,7 +791,7 @@ void UHxlbHexMapComponent::WriteHexInfoSingle(FIntPoint HexCoord, HxlbPackedData
 			const int32 BlockBytes = GPixelFormats[TextureRHI->GetFormat()].BlockBytes;
 			if (BlockBytes != sizeof(HxlbPackedData::FHexInfo))
 			{
-				UE_LOG(LogHxlbRenderThread, Error, TEXT("Mismatch between hex info texture size and hex info packed data struct."));
+				HXLB_LOG(LogHxlbRenderThread, Error, TEXT("Mismatch between hex info texture size and hex info packed data struct."));
 				return;
 			}
 			
@@ -802,7 +803,7 @@ void UHxlbHexMapComponent::WriteHexInfoSingle(FIntPoint HexCoord, HxlbPackedData
 
 			if (SurfaceData.Num() != 1)
 			{
-				UE_LOG(LogHxlbRenderThread, Error, TEXT("Expected SurfaceData to contain data for a single pixel. Got: %d"), SurfaceData.Num());
+				HXLB_LOG(LogHxlbRenderThread, Error, TEXT("Expected SurfaceData to contain data for a single pixel. Got: %d"), SurfaceData.Num());
 				return;
 			}
 

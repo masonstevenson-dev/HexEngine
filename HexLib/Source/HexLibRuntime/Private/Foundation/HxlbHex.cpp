@@ -36,6 +36,7 @@
 #include "Foundation/HxlbHexMap.h"
 #include "FunctionLibraries/HxlbMath.h"
 #include "Landscape.h"
+#include "Macros/HexLibLoggingMacros.h"
 
 using HexMath = UHxlbMath;
 
@@ -50,7 +51,7 @@ void UHxlbHex::InitialzeHex(UHxlbHexMapComponent* NewHexMap, FIntPoint& NewCoord
 	}
 	else
 	{
-		UE_LOG(LogHxlbRuntime, Error, TEXT("UHxlbHex::InitialzeHex(): HexMap is invalid. Initializing hex to the default size."));
+		HXLB_LOG(LogHxlbRuntime, Error, TEXT("UHxlbHex::InitialzeHex(): HexMap is invalid. Initializing hex to the default size."));
 		SetHexSize(100.0);
 	}
 }
@@ -80,7 +81,7 @@ void UHxlbHex::SetHexActor(AHxlbHexActor* NewActor)
 	}
 	if (HexActor)
 	{
-		UE_LOG(LogHxlbRuntime, Error, TEXT("UHxlbHex::SetHexActor(): tried to set HexActor, but an existing actor has already been set."));
+		HXLB_LOG(LogHxlbRuntime, Error, TEXT("UHxlbHex::SetHexActor(): tried to set HexActor, but an existing actor has already been set."));
 		return;
 	}
 
@@ -92,7 +93,7 @@ void UHxlbHex::ProcessGameplayTags()
 {
 	if (!HexMap.IsValid())
 	{
-		UE_LOG(LogHxlbRuntime, Error, TEXT("UHxlbHex::ProcessGameplayTags(): HexMap is invalid."));
+		HXLB_LOG(LogHxlbRuntime, Error, TEXT("UHxlbHex::ProcessGameplayTags(): HexMap is invalid."));
 		return;
 	}
 	if (!HexActor)

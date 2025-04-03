@@ -35,6 +35,7 @@ public class HexLibEditor : ModuleRules
 {
 	public HexLibEditor(ReadOnlyTargetRules Target) : base(Target)
 	{
+		bUseAnankeLog = true;
 		PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
 	
 		// UnityBuild is disabled because enabling it can temporarily hide errors caused by missing #includes- and then
@@ -44,9 +45,6 @@ public class HexLibEditor : ModuleRules
 #else
 		bFasterWithoutUnity = true;
 #endif
-
-		// Comment this out for UE Marketplace builds.
-		PublicDefinitions.Add("WITH_ANANKE_LOG_HXLBE=0");
 		
 		PublicIncludePaths.AddRange(
 			new string[] {
@@ -80,6 +78,15 @@ public class HexLibEditor : ModuleRules
 				// "AnankeCoreRuntime",
 			});
 			
+		if (bUseAnankeLog)
+		{
+			PublicDependencyModuleNames.AddRange(
+				new string[]
+				{
+					"AnankeCoreRuntime",
+				}
+			);
+		}
 		
 		PrivateDependencyModuleNames.AddRange(
 			new string[]
@@ -112,4 +119,6 @@ public class HexLibEditor : ModuleRules
 			}
 		);
 	}
+	
+	public bool bUseAnankeLog { get; set; }
 }

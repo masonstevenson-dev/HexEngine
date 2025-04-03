@@ -39,6 +39,7 @@
 #include "Toolkits/AssetEditorModeUILayer.h"
 #include "ToolkitBuilder.h"
 #include "FunctionLibraries/HxlbEditorUtils.h"
+#include "Macros/HexLibLoggingMacros.h"
 #include "Tools/HxlbMapSettingsTool.h"
 #include "Tools/HxlbToolManagerCommands.h"
 
@@ -231,7 +232,7 @@ void FHxlbToolkit::ActivateDefaultToolForPalette(FName PaletteName)
 		}
 		else
 		{
-			UE_LOG(LogHxlbEditor, Warning, TEXT("Tried to switch to HexMapSettingsTool, but the action failed."));
+			HXLB_LOG(LogHxlbEditor, Warning, TEXT("Tried to switch to HexMapSettingsTool, but the action failed."));
 		}
 	}
 
@@ -240,7 +241,7 @@ void FHxlbToolkit::ActivateDefaultToolForPalette(FName PaletteName)
 	{
 		if (!ToolkitCommands->TryExecuteAction(ToolCommands.BeginEmptyTool.ToSharedRef()))
 		{
-			UE_LOG(LogHxlbEditor, Warning, TEXT("Tried to switch to EmptyTool, but the action failed."));
+			HXLB_LOG(LogHxlbEditor, Warning, TEXT("Tried to switch to EmptyTool, but the action failed."));
 		}
 	}
 }

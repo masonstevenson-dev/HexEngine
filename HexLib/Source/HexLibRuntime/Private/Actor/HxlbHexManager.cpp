@@ -36,6 +36,7 @@
 #include "Components/ArrowComponent.h"
 #include "Components/BillboardComponent.h"
 #include "Foundation/HxlbHexMap.h"
+#include "Macros/HexLibLoggingMacros.h"
 
 AHxlbHexManager::AHxlbHexManager(const FObjectInitializer& Initializer): Super(Initializer)
 {
@@ -91,7 +92,7 @@ void AHxlbHexManager::OnConstruction(const FTransform& Transform)
 	}
 	else
 	{
-		UE_LOG(LogHxlbRuntime, Warning, TEXT("Expected valid map component."));
+		HXLB_LOG(LogHxlbRuntime, Warning, TEXT("Expected valid map component."));
 	}
 }
 

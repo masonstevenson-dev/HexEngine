@@ -44,6 +44,7 @@
 #include "ToolMenus.h"
 #include "WorkspaceMenuStructure.h"
 #include "WorkspaceMenuStructureModule.h"
+#include "Macros/HexLibLoggingMacros.h"
 #include "Subsystems/HxlbEditorMessageChannels.h"
 #include "Subsystems/HxlbEditorMessagingSubsystem.h"
 
@@ -52,7 +53,7 @@
 void FHexLibEditorModule::StartupModule()
 {
 	// This code will execute after your module is loaded into memory; the exact timing is specified in the .uplugin file per-module
-	UE_LOG(LogHxlbEditor, Log, TEXT("Starting HexLibEditorModule."));
+	HXLB_LOG(LogHxlbEditor, Log, TEXT("Starting HexLibEditorModule."));
 
 	if (GEngine && GEngine->IsInitialized())
 	{
@@ -68,7 +69,7 @@ void FHexLibEditorModule::ShutdownModule()
 {
 	// This function may be called during shutdown to clean up your module.  For modules that support dynamic reloading,
 	// we call this function before unloading the module.
-	UE_LOG(LogHxlbEditor, Log, TEXT("Shutting Down HexLibEditorModule"));
+	HXLB_LOG(LogHxlbEditor, Log, TEXT("Shutting Down HexLibEditorModule"));
 
 	if (!IsRunningGame())
 	{
@@ -221,7 +222,7 @@ void FHexLibEditorModule::DoStartup()
 	}
 	else
 	{
-		UE_LOG(LogHxlbEditor, Error, TEXT("IPlacementModeModule is not available!"))
+		HXLB_LOG(LogHxlbEditor, Error, TEXT("IPlacementModeModule is not available!"))
 	}
 }
 

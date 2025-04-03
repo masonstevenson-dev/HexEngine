@@ -45,6 +45,7 @@
 #include "Landscape.h"
 #include "ToolTargetManager.h"
 #include "Foundation/HxlbHexIterators.h"
+#include "Macros/HexLibLoggingMacros.h"
 #include "Subsystems/HxlbEditorMessageChannels.h"
 #include "Subsystems/HxlbEditorMessagingSubsystem.h"
 
@@ -81,7 +82,7 @@ float FHxlbHighlightContext::GetZOffset() const
 		Offset += 2.0;
 		break;
 	default:
-		UE_LOG(LogHxlbEditor, Error, TEXT("FHxlbHighlightContext::GetZOffset(): Unsupported selection type: %s"), *UEnum::GetValueAsString(Type));
+		HXLB_LOG(LogHxlbEditor, Error, TEXT("FHxlbHighlightContext::GetZOffset(): Unsupported selection type: %s"), *UEnum::GetValueAsString(Type));
 		break;
 	}
 
@@ -242,7 +243,7 @@ void UHxlbSelectionToolBase::OnUpdateModifierState(int ModifierID, bool bIsOn)
 {
 	// NOTE: This fn seems to run on tick. Leaving this test in for posterity.
 	// FString sIsOn = bIsOn ? "true" : "false";
-	// UE_LOG(LogHxlbEditor, Error, TEXT("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^: %d %s"), ModifierID, *sIsOn);
+	// HXLB_LOG(LogHxlbEditor, Error, TEXT("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^: %d %s"), ModifierID, *sIsOn);
 	
 	if (ModifierID == ShiftModifierID)
 	{
@@ -275,13 +276,13 @@ void UHxlbSelectionToolBase::OnClickPress(const FInputDeviceRay& PressPos)
 	}
 	if (bSelectionInProgress)
 	{
-		UE_LOG(LogHxlbEditor, Error, TEXT("Tried to start a selection but selection was already in progress."));
+		HXLB_LOG(LogHxlbEditor, Error, TEXT("Tried to start a selection but selection was already in progress."));
 		bSelectionInProgress = false;
 		UpdateAndPublishSelection();
 	}
 	if (!SelectionState.SelectingHexes.IsEmpty() || !SelectionState.RemovingHexes.IsEmpty())
 	{
-		UE_LOG(LogHxlbEditor, Error, TEXT("SelectionState has pending temporary selection states."));
+		HXLB_LOG(LogHxlbEditor, Error, TEXT("SelectionState has pending temporary selection states."));
 		UpdateAndPublishSelection();
 	}
 	
@@ -324,7 +325,7 @@ void UHxlbSelectionToolBase::OnClickDrag(const FInputDeviceRay& DragPos)
 
 	if (!ToolSettings)
 	{
-		UE_LOG(LogHxlbEditor, Error, TEXT("UHxlbSelectionToolBase::OnClickDrag(): Tool settings are not initialized"));
+		HXLB_LOG(LogHxlbEditor, Error, TEXT("UHxlbSelectionToolBase::OnClickDrag(): Tool settings are not initialized"));
 	}
 	
 	bool bForceIgnoreGrid = true; // true because the user is allowed to drag the mouse outside the grid, and select stuff only inside the grid.
@@ -405,7 +406,7 @@ void UHxlbSelectionToolBase::OnClickDrag(const FInputDeviceRay& DragPos)
 				break;
 			}
 	default:
-			UE_LOG(LogHxlbEditor, Error, TEXT("Unknown selection mode: %s"), *UEnum::GetValueAsString(ToolSettings->SelectionMode));
+			HXLB_LOG(LogHxlbEditor, Error, TEXT("Unknown selection mode: %s"), *UEnum::GetValueAsString(ToolSettings->SelectionMode));
 	}
 
 	LastFocusedHex = HexCoords;
@@ -453,7 +454,7 @@ void UHxlbSelectionToolBase::RequestAction(EHxlbSelectionToolAction Action)
 {
 	if (PendingAction != EHxlbSelectionToolAction::NoAction)
 	{
-		UE_LOG(
+		HXLB_LOG(
 			LogHxlbEditor,
 			Warning,
 			TEXT("UHxlbSelectionToolBase::RequestAction() requested action %s but action %s is pending"),
@@ -516,7 +517,7 @@ void UHxlbSelectionToolBase::ApplyPendingAction()
 		CycleSelectionType(true);
 		break;
 	default:
-		UE_LOG(LogHxlbEditor, Warning, TEXT("Unknown HxlbSelectionToolAction: %s"), *UEnum::GetValueAsString(PendingAction));
+		HXLB_LOG(LogHxlbEditor, Warning, TEXT("Unknown HxlbSelectionToolAction: %s"), *UEnum::GetValueAsString(PendingAction));
 	}
 
 	if (bFlushPending)
@@ -529,7 +530,7 @@ bool UHxlbSelectionToolBase::SelectHex(const FIntPoint& NewSelection, bool bIsRe
 {
 	if (!bSelectionInProgress)
 	{
-		UE_LOG(LogHxlbEditor, Error, TEXT("Tried to select a hex but selection is not in progress"));
+		HXLB_LOG(LogHxlbEditor, Error, TEXT("Tried to select a hex but selection is not in progress"));
 		return false;
 	}
 	if (!ValidateHex(NewSelection))
@@ -625,7 +626,7 @@ void UHxlbSelectionToolBase::CreateProxiesFromSelection()
 	AHxlbHexManager* HexManager = FindHexManager();
 	if (!HexManager)
 	{
-		UE_LOG(LogHxlbEditor, Error, TEXT("UHxlbSelectionToolBase::CreateProxiesFromSelection(): HexManager is missing."));
+		HXLB_LOG(LogHxlbEditor, Error, TEXT("UHxlbSelectionToolBase::CreateProxiesFromSelection(): HexManager is missing."));
 		return;
 	}
 
@@ -681,7 +682,7 @@ bool UHxlbSelectionToolBase::UpdateHover()
 	AHxlbHexManager* HexManager = FindHexManager(/*bCachedOnly=*/true);
 	if (!HexManager)
 	{
-		UE_LOG(LogHxlbEditor, Error, TEXT("UHxlbSelectionToolBase::UpdateHover(): HexManager is missing."));
+		HXLB_LOG(LogHxlbEditor, Error, TEXT("UHxlbSelectionToolBase::UpdateHover(): HexManager is missing."));
 		return false;
 	}
 
@@ -692,7 +693,7 @@ bool UHxlbSelectionToolBase::UpdateHover()
 	}
 	if (!HitGridHexCoords.IsSet())
 	{
-		UE_LOG(LogHxlbEditor, Error, TEXT("UHxlbSelectionToolBase::UpdateHover(): HitGridHexCoords is invalid."));
+		HXLB_LOG(LogHxlbEditor, Error, TEXT("UHxlbSelectionToolBase::UpdateHover(): HitGridHexCoords is invalid."));
 		return false;
 	}
 	
@@ -801,7 +802,7 @@ void UHxlbSelectionToolBase::UpdateAndPublishSelection()
 			{
 				if (!HexManager->MapComponent->GetOrCreateHex(HexCoord))
 				{
-					UE_LOG(LogHxlbEditor, Error, TEXT("Got invalid hex data while pre-allocating hex data."));
+					HXLB_LOG(LogHxlbEditor, Error, TEXT("Got invalid hex data while pre-allocating hex data."));
 				}
 			}
 			for (FIntPoint HexCoord : SelectionState.SelectedHexes)
@@ -809,7 +810,7 @@ void UHxlbSelectionToolBase::UpdateAndPublishSelection()
 				UHxlbHex* HexData = HexManager->MapComponent->GetOrCreateHex(HexCoord);
 				if (!HexData)
 				{
-					UE_LOG(LogHxlbEditor, Error, TEXT("Got invalid hex data while selecting hexes."));
+					HXLB_LOG(LogHxlbEditor, Error, TEXT("Got invalid hex data while selecting hexes."));
 					continue;
 				}
 				Hexes.Add(HexData);
@@ -868,7 +869,7 @@ void UHxlbSelectionToolBase::DrawSelection()
 	
 	if (SelectionLines == nullptr)
 	{
-		UE_LOG(LogHxlbEditor, Error, TEXT("UHxlbSelectionToolBase::DrawSelection(): SelectionLines is invalid."));
+		HXLB_LOG(LogHxlbEditor, Error, TEXT("UHxlbSelectionToolBase::DrawSelection(): SelectionLines is invalid."));
 		return;
 	}
 	
@@ -885,7 +886,7 @@ void UHxlbSelectionToolBase::DrawSelection()
 	AHxlbHexManager* HexManager = FindHexManager(/*bCachedOnly=*/true);
 	if (!HexManager)
 	{
-		UE_LOG(LogHxlbEditor, Error, TEXT("UHxlbGridTool::DrawSelection(): HexManager is missing."));
+		HXLB_LOG(LogHxlbEditor, Error, TEXT("UHxlbGridTool::DrawSelection(): HexManager is missing."));
 		return;
 	}
 	
@@ -997,7 +998,7 @@ ULineSetComponent* UHxlbSelectionToolBase::HighlightContextToLineSet(FHxlbHighli
 	case EHxlbHighlightType::Removing:
 		return SelectionLines;
 	default:
-		UE_LOG(LogHxlbEditor, Error, TEXT("UHxlbSelectionToolBase::HighlightContextToLineSet(): Unknown HighlightType: %s"), *UEnum::GetValueAsString(Context.Type));
+		HXLB_LOG(LogHxlbEditor, Error, TEXT("UHxlbSelectionToolBase::HighlightContextToLineSet(): Unknown HighlightType: %s"), *UEnum::GetValueAsString(Context.Type));
 	}
 
 	return nullptr;

@@ -34,6 +34,7 @@
 #include "Containers/UnrealString.h"
 #include "FunctionLibraries/HxlbMath.h"
 #include "Logging/LogVerbosity.h"
+#include "Macros/HexLibLoggingMacros.h"
 #include "Misc/AutomationTest.h"
 
 using HexMath = UHxlbMath;
@@ -199,7 +200,7 @@ protected:
 		TestFunction* CurrentTest = Tests.Find(Parameters);
 		if (!CurrentTest || !*CurrentTest)
 		{
-			UE_LOG(LogHxlbRuntime, Error, TEXT("Cannot find test: %s"), *Parameters);
+			HXLB_LOG(LogHxlbRuntime, Error, TEXT("Cannot find test: %s"), *Parameters);
 			return false;
 		}
 

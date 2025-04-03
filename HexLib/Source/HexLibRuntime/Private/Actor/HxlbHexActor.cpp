@@ -36,6 +36,7 @@
 #include "Foundation/HxlbHex.h"
 #include "FunctionLibraries/HxlbMath.h"
 #include "HexLibRuntimeLoggingDefs.h"
+#include "Macros/HexLibLoggingMacros.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Materials/MaterialInterface.h"
 
@@ -68,14 +69,14 @@ void AHxlbHexActor::InitializeHexActor(UHxlbHex* NewHex)
 {
 	if (!NewHex)
 	{
-		UE_LOG(LogHxlbRuntime, Error, TEXT("AHxlbHexActor::InitializeHexActor(): NewHex is invalid"));
+		HXLB_LOG(LogHxlbRuntime, Error, TEXT("AHxlbHexActor::InitializeHexActor(): NewHex is invalid"));
 		return;
 	}
 
 	Hex = NewHex;
 	if (!Hex->GetHexMap().IsValid())
 	{
-		UE_LOG(LogHxlbRuntime, Error, TEXT("AHxlbHexActor::InitializeHexActor(): HexMap is invalid"));
+		HXLB_LOG(LogHxlbRuntime, Error, TEXT("AHxlbHexActor::InitializeHexActor(): HexMap is invalid"));
 		return;
 	}
 	
@@ -95,12 +96,12 @@ void AHxlbHexActor::SyncLocationAndScale()
 {
 	if (!Hex.IsValid())
 	{
-		UE_LOG(LogHxlbRuntime, Error, TEXT("AHxlbHexActor::SyncLocation(): Hex is invalid"));
+		HXLB_LOG(LogHxlbRuntime, Error, TEXT("AHxlbHexActor::SyncLocation(): Hex is invalid"));
 		return;
 	}
 	if (!Hex->GetHexMap().IsValid())
 	{
-		UE_LOG(LogHxlbRuntime, Error, TEXT("AHxlbHexActor::SyncLocation(): HexMap is invalid"));
+		HXLB_LOG(LogHxlbRuntime, Error, TEXT("AHxlbHexActor::SyncLocation(): HexMap is invalid"));
 		return;
 	}
 	

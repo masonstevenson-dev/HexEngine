@@ -37,6 +37,7 @@
 #include "HexLibEditorLoggingDefs.h"
 #include "ToolContextInterfaces.h"
 #include "Editor/HxlbToolkit.h"
+#include "Macros/HexLibLoggingMacros.h"
 #include "Styles/HxlbStyle.h"
 #include "Toolkits/ToolkitManager.h"
 #include "Tools/HxlbEmptyTool.h"
@@ -134,7 +135,7 @@ void UHxlbEditorMode::CreateToolkit()
 {
 	if (Toolkit.IsValid())
 	{
-		UE_LOG(LogHxlbEditor, Error, TEXT("Got request to create Toolkit, but Toolkit is already valid."));
+		HXLB_LOG(LogHxlbEditor, Error, TEXT("Got request to create Toolkit, but Toolkit is already valid."));
 		return;
 	}
 
@@ -167,14 +168,14 @@ void UHxlbEditorMode::ActivateDefaultToolFromPalette()
 {
 	if (!Toolkit.IsValid())
 	{
-		UE_LOG(LogHxlbEditor, Error, TEXT("UHxlbEditorMode::ActivateDefaultTool(): Missing Toolkit."));
+		HXLB_LOG(LogHxlbEditor, Error, TEXT("UHxlbEditorMode::ActivateDefaultTool(): Missing Toolkit."));
 		return;
 	}
 	
 	TSharedPtr<FHxlbToolkit> HxlbToolkit = StaticCastSharedPtr<FHxlbToolkit>(Toolkit);
 	if (!HxlbToolkit.IsValid())
 	{
-		UE_LOG(LogHxlbEditor, Error, TEXT("UHxlbEditorMode::ActivateDefaultTool(): Expected a HxlbToolkit."));
+		HXLB_LOG(LogHxlbEditor, Error, TEXT("UHxlbEditorMode::ActivateDefaultTool(): Expected a HxlbToolkit."));
 		return;
 	}
 
