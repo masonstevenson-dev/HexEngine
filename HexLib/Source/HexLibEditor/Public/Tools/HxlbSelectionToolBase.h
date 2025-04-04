@@ -59,7 +59,7 @@ UENUM()
 enum class EHxlbSelectionToolAction: uint8
 {
 	NoAction,
-	SelectAll,
+	// SelectAll,
 	CreateHexProxies,
 	NextSelectionType,
 	PrevSelectionType

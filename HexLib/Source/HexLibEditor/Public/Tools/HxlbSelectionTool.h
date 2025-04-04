@@ -42,8 +42,8 @@ class HEXLIBEDITOR_API UHxlbSelectionToolActions : public UHxlbSelectionToolActi
 
 public:
 	/** Can also be invoked with ctrl+A. */
-	UFUNCTION(CallInEditor, Category = Selection, meta = (DisplayPriority = 1))
-	void SelectAll() { RequestActionFromParent(EHxlbSelectionToolAction::SelectAll); }
+	// UFUNCTION(CallInEditor, Category = Selection, meta = (DisplayPriority = 1))
+	// void SelectAll() { RequestActionFromParent(EHxlbSelectionToolAction::SelectAll); }
 };
 
 UCLASS()

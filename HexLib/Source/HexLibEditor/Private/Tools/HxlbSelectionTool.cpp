@@ -61,13 +61,13 @@ void UHxlbSelectionTool::RegisterActions(FInteractiveToolActionSet& ActionSet)
 	Super::RegisterActions(ActionSet);
 
 	NextActionID = (int32)EStandardToolActions::BaseClientDefinedActionID + 1;
-	ActionSet.RegisterAction(this, NextActionID++,
-		TEXT("SelectAll"),
-		LOCTEXT("SelectAllAction", "Select All"),
-		LOCTEXT("CreateProxiesTooltip", "Selects all hexes in the grid."),
-		EModifierKey::Control,
-		EKeys::A,
-		[this](){ RequestAction(EHxlbSelectionToolAction::SelectAll); });
+	// ActionSet.RegisterAction(this, NextActionID++,
+	//	TEXT("SelectAll"),
+	//	LOCTEXT("SelectAllAction", "Select All"),
+	//	LOCTEXT("CreateProxiesTooltip", "Selects all hexes in the grid."),
+	//	EModifierKey::Control,
+	//	EKeys::A,
+	//	[this](){ RequestAction(EHxlbSelectionToolAction::SelectAll); });
 	ActionSet.RegisterAction(this, NextActionID++,
 		TEXT("CycleSelectionTypeForward"),
 		LOCTEXT("CycleSelectionForward", "Next Selection Type"),

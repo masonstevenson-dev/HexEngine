@@ -504,9 +504,9 @@ void UHxlbSelectionToolBase::ApplyPendingAction()
 	case EHxlbSelectionToolAction::NoAction:
 		bFlushPending = false;
 		break;
-	case  EHxlbSelectionToolAction::SelectAll:
-		SelectAll();
-		break;
+	// case  EHxlbSelectionToolAction::SelectAll:
+	//	SelectAll();
+	//	break;
 	case EHxlbSelectionToolAction::CreateHexProxies:
 		CreateProxiesFromSelection();
 		break;
