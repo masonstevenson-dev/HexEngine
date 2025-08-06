@@ -34,6 +34,7 @@
 #include "HexLibEditorLoggingDefs.h"
 #include "Actor/HxlbHexManager.h"
 #include "EngineUtils.h"
+#include "Foundation/HxlbHexIterators.h"
 #include "HxlbConstants.h"
 #include "HxlbDefines.h"
 #include "InputCoreTypes.h"
@@ -141,9 +142,10 @@ void UHxlbMapSettingsTool::OnPropertyModified(UObject* PropertySet, FProperty* P
 	{
 		UpdateOptions.bRefreshTagSettings = true;
 	}
-	if (Property->GetFName() == GET_MEMBER_NAME_CHECKED(FHxlbMapSettings, bEnableOverlay))
+	if (Property->GetFName() == GET_MEMBER_NAME_CHECKED(FHxlbMapSettings, GridMode))
 	{
-		HandleEnableOverlay();
+		HandleLandscapeOverlay();
+		HandleSpawnGridActors();
 		
 		UpdateOptions.bForceLandscapeRTRefresh = true;
 		UpdateOptions.bRefreshGridlines = true;
@@ -240,7 +242,7 @@ void UHxlbMapSettingsTool::HandleRefreshLandscapeRT()
 	HexManager->MapComponent->RefreshLandscapeData();
 }
 
-void UHxlbMapSettingsTool::HandleEnableOverlay()
+void UHxlbMapSettingsTool::HandleLandscapeOverlay()
 {
 	AHxlbHexManager* HexManager = FindHexManager();
 	if (!HexManager)
@@ -248,7 +250,7 @@ void UHxlbMapSettingsTool::HandleEnableOverlay()
 		return;
 	}
 	
-	bool bWantsOverlayEnabled = ToolSettings->MapSettings.bEnableOverlay;
+	bool bWantsOverlayEnabled = ToolSettings->MapSettings.GridMode == EHexGridMode::Landscape;
 	
 	APostProcessVolume* OverlayPPV = HexManager->GetOverlayPPV();
 	if (bWantsOverlayEnabled && !OverlayPPV)
@@ -264,6 +266,30 @@ void UHxlbMapSettingsTool::HandleEnableOverlay()
 #if HXLB_ENABLE_LEGACY_EDITOR_GRID
 		bIsDirty = true;
 #endif
+	}
+}
+
+void UHxlbMapSettingsTool::HandleSpawnGridActors()
+{
+	AHxlbHexManager* HexManager = FindHexManager();
+	if (!HexManager)
+	{
+		return;
+	}
+
+	TObjectPtr<UHxlbHexMapComponent> HexMap = HexManager->MapComponent.Get();
+
+	if (ToolSettings->MapSettings.GridMode != EHexGridMode::Tiled)
+	{
+		HexMap->ClearHexActors();
+		return;
+	}
+	
+	auto Iterator = HexMap->GetGridIterator(CurrentCameraAxialCoords);
+	while(Iterator && Iterator->Next())
+	{
+		FIntPoint HexCoords = Iterator->Get();
+		HexManager->AddHex(HexCoords, true);
 	}
 }
 

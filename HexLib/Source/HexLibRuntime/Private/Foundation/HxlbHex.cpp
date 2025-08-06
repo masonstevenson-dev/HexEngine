@@ -89,6 +89,17 @@ void UHxlbHex::SetHexActor(AHxlbHexActor* NewActor)
 	HexActor->InitializeHexActor(this);
 }
 
+void UHxlbHex::ClearHexActor()
+{
+	if (!HexActor)
+	{
+		return;
+	}
+
+	HexActor->Destroy();
+	HexActor = nullptr;
+}
+
 void UHxlbHex::ProcessGameplayTags()
 {
 	if (!HexMap.IsValid())

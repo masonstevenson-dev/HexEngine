@@ -53,6 +53,14 @@ enum class EHexMapShape : uint8
 	Manual UMETA(Hidden),
 };
 
+UENUM()
+enum class EHexGridMode : uint8
+{
+	Proxy,
+	Tiled,
+	Landscape
+};
+
 USTRUCT(BlueprintType)
 struct HEXLIBRUNTIME_API FHexagonalHexMapSettings
 {
@@ -99,6 +107,9 @@ struct HEXLIBRUNTIME_API FHxlbMapSettings
 
 public:
 	FHxlbMapSettings();
+
+	UPROPERTY(EditAnywhere, Category="Grid")
+	EHexGridMode GridMode = EHexGridMode::Proxy;
 	
 	UPROPERTY(EditAnywhere, Category="Map Shape")
 	double HexSize = 500.0;
@@ -115,11 +126,8 @@ public:
 
 	UPROPERTY(EditAnywhere, meta=(EditCondition = "Shape == EHexMapShape::Rectangular", EditConditionHides), Category="Map Shape")
 	FRectangularHexMapSettings RectangularHexMapSettings;
-	
-	UPROPERTY(EditAnywhere, Category="Landscape")
-	bool bEnableOverlay = false;
 
-	UPROPERTY(EditAnywhere, meta=(EditCondition = "bEnableOverlay", EditConditionHides), Category="Landscape")
+	UPROPERTY(EditAnywhere, meta=(EditCondition = "GridMode == EHexGridMode::Landscape", EditConditionHides), Category="Landscape")
 	FHexMapOverlaySettings OverlaySettings;
 
 	UPROPERTY(EditAnywhere, Category = "Hex Data")
@@ -163,6 +171,7 @@ public:
 	virtual UHxlbHexIteratorWrapper* GetGridIterator(FIntPoint CameraCoord);
 	UHxlbHex* GetHexData(FIntPoint AxialCoord) { return HexData.FindRef(AxialCoord); }
 	virtual UHxlbHex* GetOrCreateHex(FIntPoint AxialCoord);
+	virtual void ClearHexActors();
 	virtual UHxlbHex* CreateBulkEditProxy();
 	virtual void ClearBulkEditProxy();
 	virtual void CommitBulkEdits();

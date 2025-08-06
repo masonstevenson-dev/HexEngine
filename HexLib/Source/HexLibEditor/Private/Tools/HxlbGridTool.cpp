@@ -126,7 +126,6 @@ void UHxlbGridTool::OnTick(float DeltaTime)
 	
 	AHxlbHexManager* HexManager = FindHexManager(true);
 	bool bHasHexManager = HexManager != nullptr;
-	bool bHasLandscape = bHasHexManager && HexManager->MapSettings().OverlaySettings.TargetLandscape.IsValid();
 	
 	if (bHasHexManager)
 	{
@@ -138,15 +137,15 @@ void UHxlbGridTool::OnTick(float DeltaTime)
 		FText WarningText = HxlbEditorUtil::ComposeToolWarning(EHxlbToolWarningAction::DISPLAY, EHxlbToolWarningId::HexManagerMissing);
 		GetToolManager()->DisplayMessage(WarningText, EToolMessageLevel::UserWarning);
 	}
-	if (bHasLandscape)
-	{
-		FText ClearMessage = HxlbEditorUtil::ComposeToolWarning(EHxlbToolWarningAction::CLEAR, EHxlbToolWarningId::LandscapeMissing);
-		GetToolManager()->DisplayMessage(ClearMessage, EToolMessageLevel::UserWarning);
-	}
-	else
+	if (bHasHexManager && HexManager->MapSettings().GridMode == EHexGridMode::Landscape && !HexManager->MapSettings().OverlaySettings.TargetLandscape.IsValid())
 	{
 		FText WarningText = HxlbEditorUtil::ComposeToolWarning(EHxlbToolWarningAction::DISPLAY, EHxlbToolWarningId::LandscapeMissing);
 		GetToolManager()->DisplayMessage(WarningText, EToolMessageLevel::UserWarning);
+	}
+	else
+	{
+		FText ClearMessage = HxlbEditorUtil::ComposeToolWarning(EHxlbToolWarningAction::CLEAR, EHxlbToolWarningId::LandscapeMissing);
+		GetToolManager()->DisplayMessage(ClearMessage, EToolMessageLevel::UserWarning);
 	}
 }
 
@@ -266,7 +265,7 @@ FHxlbHexCoord UHxlbGridTool::GetHitGridHex(const FRay& WorldRay, const bool bFor
 	}
 	
 	FHxlbMapSettings& MapSettings = HexManager->MapComponent->MapSettings;
-	bool bTryLandscapeTrace = MapSettings.bEnableOverlay;
+	bool bTryLandscapeTrace = MapSettings.GridMode == EHexGridMode::Landscape;
 	bool bTryFallbackTrace = false;
 	
 	if (bTryLandscapeTrace)
@@ -337,9 +336,8 @@ void UHxlbGridTool::DrawHexGrid()
 	{
 		return;
 	}
-	if (HexManager->MapComponent->MapSettings.bEnableOverlay)
+	if (HexManager->MapComponent->MapSettings.GridMode != EHexGridMode::Proxy)
 	{
-		// If the overlay is enabled, we don't draw the grid using preview geometry.
 		return;
 	}
 

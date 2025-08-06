@@ -36,6 +36,7 @@
 #include "BaseBehaviors/MouseHoverBehavior.h"
 #include "Drawing/LineSetComponent.h"
 #include "Drawing/PreviewGeometryActor.h"
+#include "Engine/Selection.h"
 #include "EngineUtils.h"
 #include "HexLibEditorModule.h"
 #include "HxlbEditorConstants.h"
@@ -117,7 +118,7 @@ void FHxlbHighlightContext::ExtractContextInfoFromHexMap(UHxlbHexMapComponent* H
 		WorldCoords = HexMath::AxialToWorld(HexCoords, HexSize);
 	}
 
-	if (HexMap->MapSettings.bEnableOverlay)
+	if (HexMap->MapSettings.GridMode == EHexGridMode::Landscape)
 	{
 		Landscape = HexMap->MapSettings.OverlaySettings.TargetLandscape.Get();
 	}
@@ -705,7 +706,7 @@ bool UHxlbSelectionToolBase::UpdateHover()
 
 	HoverState.SetCurrent(HitGridHexCoords.Get());
 
-	if (HexManager->MapComponent->MapSettings.bEnableOverlay)
+	if (HexManager->MapComponent->MapSettings.GridMode != EHexGridMode::Proxy)
 	{
 		HexManager->MapComponent->HoverHex(HoverState, !bCtrlKeyIsPressed);
 	}
@@ -744,7 +745,7 @@ void UHxlbSelectionToolBase::ClearHover()
 
 	HoverState.ClearCurrent();
 
-	if (HexManager->MapComponent->MapSettings.bEnableOverlay)
+	if (HexManager->MapComponent->MapSettings.GridMode != EHexGridMode::Proxy)
 	{
 		HexManager->MapComponent->HoverHex(HoverState);
 	}
@@ -796,7 +797,7 @@ void UHxlbSelectionToolBase::UpdateAndPublishSelection()
 		if (HexManager)
 		{
 			FHexLibEditorModule& EditorModule = FModuleManager::LoadModuleChecked<FHexLibEditorModule>("HexLibEditor");
-			TArray<UObject*> Hexes;
+			TArray<UHxlbHex*> Hexes;
 
 			for (FIntPoint HexCoord : SelectionState.SelectingHexes)
 			{
@@ -815,13 +816,32 @@ void UHxlbSelectionToolBase::UpdateAndPublishSelection()
 				}
 				Hexes.Add(HexData);
 			}
-			
-			UHxlbHex* BulkEditProxy = nullptr;
-			if (Hexes.Num() > HxlbEditorConstants::BulkEditThreshold)
+
+			if (HexManager->MapSettings().GridMode == EHexGridMode::Landscape)
 			{
-				BulkEditProxy = HexManager->MapComponent->CreateBulkEditProxy();
+				UHxlbHex* BulkEditProxy = nullptr;
+				if (Hexes.Num() > HxlbEditorConstants::BulkEditThreshold)
+				{
+					BulkEditProxy = HexManager->MapComponent->CreateBulkEditProxy();
+				}
+				EditorModule.SetDetailsObjects(static_cast<TArray<UObject*>>(Hexes), BulkEditProxy);
 			}
-			EditorModule.SetDetailsObjects(Hexes, BulkEditProxy);
+			else if (HexManager->MapSettings().GridMode == EHexGridMode::Tiled && GEditor)
+			{
+				USelection* SelectedActors = GEditor->GetSelectedActors();
+				SelectedActors->BeginBatchSelectOperation();
+				SelectedActors->Modify();
+				GEditor->SelectNone(false, true);
+				for (UHxlbHex* Hex : Hexes)
+				{
+					if (AActor* HexActor = Hex->GetHexActor())
+					{
+						GEditor->SelectActor(HexActor, true, false);
+					}
+				}
+				SelectedActors->EndBatchSelectOperation();
+				GEditor->NoteSelectionChange();
+			}
 		}
 	}
 }
@@ -834,9 +854,16 @@ void UHxlbSelectionToolBase::ClearSelection()
 	AHxlbHexManager* HexManager = FindHexManager();
 	if (HexManager)
 	{
-		FHexLibEditorModule& EditorModule = FModuleManager::LoadModuleChecked<FHexLibEditorModule>("HexLibEditor");
-		TArray<UObject*> EmptyHexes;
-		EditorModule.SetDetailsObjects(EmptyHexes, nullptr);
+		if (HexManager->MapSettings().GridMode == EHexGridMode::Landscape)
+		{
+			FHexLibEditorModule& EditorModule = FModuleManager::LoadModuleChecked<FHexLibEditorModule>("HexLibEditor");
+			TArray<UObject*> EmptyHexes;
+			EditorModule.SetDetailsObjects(EmptyHexes, nullptr);
+		}
+		else if (HexManager->MapSettings().GridMode == EHexGridMode::Tiled && GEditor)
+		{
+			GEditor->SelectNone(true, true);
+		}
 	}
 }
 
@@ -849,13 +876,14 @@ void UHxlbSelectionToolBase::PublishSelection()
 	}
 
 #if HXLB_ENABLE_LEGACY_EDITOR_GRID
-	if (!HexManager->MapComponent->MapSettings.bEnableOverlay)
+	if (HexManager->MapComponent->MapSettings.GridMode == EHexGridMode::Proxy)
 	{
 		DrawSelection();
 		return;
 	}
 #endif
 
+	SelectionState.bWriteSelectedToRT = HexManager->MapComponent->MapSettings.GridMode == EHexGridMode::Landscape;
 	HexManager->MapComponent->UpdateSelection(SelectionState);
 }
 

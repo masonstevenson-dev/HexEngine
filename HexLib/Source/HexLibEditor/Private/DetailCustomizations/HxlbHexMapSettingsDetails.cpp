@@ -113,12 +113,12 @@ void FHxlbHexMapSettingsDetails::CustomizeChildren(TSharedRef<IPropertyHandle> P
 		}
 	}
 	
-	if (TSharedPtr<IPropertyHandle> OverlayToggleProperty = PropertyHandle->GetChildHandle(GET_MEMBER_NAME_CHECKED(FHxlbMapSettings, bEnableOverlay)))
+	if (TSharedPtr<IPropertyHandle> OverlayToggleProperty = PropertyHandle->GetChildHandle(GET_MEMBER_NAME_CHECKED(FHxlbMapSettings, GridMode)))
 	{
 		TAttribute<EVisibility> VisibilityAttribute = TAttribute<EVisibility>::CreateLambda([OverlayToggleProperty]
 		{
-			bool bOverlayEnabled = false;
-			if (OverlayToggleProperty->GetValue(bOverlayEnabled) == FPropertyAccess::Success && bOverlayEnabled)
+			uint8 OverlayEnabled;
+			if (OverlayToggleProperty->GetValue(OverlayEnabled) == FPropertyAccess::Success && static_cast<EHexGridMode>(OverlayEnabled) == EHexGridMode::Landscape)
 			{
 				return EVisibility::Visible;
 			}

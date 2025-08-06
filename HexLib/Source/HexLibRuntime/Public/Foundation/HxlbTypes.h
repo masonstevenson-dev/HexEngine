@@ -200,4 +200,8 @@ public:
 	TSet<FIntPoint> SelectingHexes;
 	TSet<FIntPoint> RemovingHexes;
 	FIntPoint FirstSelectedHex = FIntPoint::ZeroValue;
+
+	bool bWriteSelectedToRT = true;
+	bool bWriteSelectingToRT = true;
+	bool bWriteRemovingToRT = true;
 };

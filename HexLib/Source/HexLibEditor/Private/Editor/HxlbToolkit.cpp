@@ -347,7 +347,7 @@ void FHxlbToolkit::RefreshActiveToolMessage()
 		{
 			Message += "\n\n";
 		}
-		Message += "Landscape overlay is currently disabled. Falling back on proxy grid.";
+		Message += "Landscape is missing.";
 	}
 	
 	ToolWarningArea->SetText(FText::FromString(Message));

@@ -67,6 +67,7 @@ public:
 	
 	AHxlbHexActor* GetHexActor() { return HexActor; }
 	void SetHexActor(AHxlbHexActor* NewActor);
+	void ClearHexActor();
 
 	// Searches HexActor for certain owned gameplay tags and then uses them for various updates.
 	void ProcessGameplayTags();

@@ -73,7 +73,7 @@ void UHxlbHexMapComponent::InitGridData(FVector NewGridOrigin)
 
 bool UHxlbHexMapComponent::IsValidAxialCoord(FIntPoint AxialCoord)
 {
-	if (MapSettings.bEnableOverlay == true)
+	if (MapSettings.GridMode == EHexGridMode::Landscape)
 	{
 		// Check valid in texture
 		TObjectPtr<UTextureRenderTarget2D> HexInfoRT = MapSettings.OverlaySettings.PerHexDataRT;
@@ -179,6 +179,22 @@ UHxlbHex* UHxlbHexMapComponent::GetOrCreateHex(FIntPoint AxialCoord)
 	return NewHex;
 }
 
+void UHxlbHexMapComponent::ClearHexActors()
+{
+	for (auto HexIterator = HexData.CreateIterator(); HexIterator; ++HexIterator)
+	{
+		UHxlbHex* Hex = HexIterator.Value();
+
+		if (!Hex)
+		{
+			continue;
+		}
+
+		Hex->ClearHexActor();
+	}
+}
+
+
 UHxlbHex* UHxlbHexMapComponent::CreateBulkEditProxy()
 {
 	BulkEditProxy = NewObject<UHxlbHex>(this, MapSettings.DefaultHexClass.Get());
@@ -254,7 +270,7 @@ void UHxlbHexMapComponent::Update(FHxlbMapSettings& NewMapSettings, FHxlbHexMapU
 		
 		Hex->SetHexSize(MapSettings.HexSize);
 
-		if (!!Hex->GetHexActor())
+		if (!Hex->GetHexActor())
 		{
 			continue;
 		}
@@ -285,7 +301,7 @@ void UHxlbHexMapComponent::HoverHex(FHxlbHexCoordDelta& HoverState, bool bIsSele
 	{
 		FIntPoint Prev = HoverState.GetPrev();
 
-		if (SelectionState.SelectedHexes.Contains(Prev))
+		if (SelectionState.SelectedHexes.Contains(Prev) && SelectionState.bWriteSelectedToRT)
 		{
 			SetHexHighlightType(HoverState.GetPrev(), EHxlbHighlightType::Selected);
 		}
@@ -328,7 +344,14 @@ void UHxlbHexMapComponent::UpdateSelection(FHxlbSelectionState& NewSelectionStat
 	for (FIntPoint HexCoord : NewSelectionState.SelectingHexes)
 	{
 		HxlbPackedData::FHexInfo Info{};
-		Info.HighlightType = static_cast<uint8>(EHxlbHighlightType::Selecting);
+		if (NewSelectionState.bWriteSelectingToRT)
+		{
+			Info.HighlightType = static_cast<uint8>(EHxlbHighlightType::Selecting);
+		}
+		else
+		{
+			Info.HighlightType = static_cast<uint8>(EHxlbHighlightType::None);
+		}
 
 		HexCoords.Add(HexCoord);
 		HexInfos.Add(Info);
@@ -337,7 +360,14 @@ void UHxlbHexMapComponent::UpdateSelection(FHxlbSelectionState& NewSelectionStat
 	for (FIntPoint HexCoord : NewSelectionState.SelectedHexes)
 	{
 		HxlbPackedData::FHexInfo Info{};
-		Info.HighlightType = static_cast<uint8>(EHxlbHighlightType::Selected);
+		if (NewSelectionState.bWriteSelectedToRT)
+		{
+			Info.HighlightType = static_cast<uint8>(EHxlbHighlightType::Selected);
+		}
+		else
+		{
+			Info.HighlightType = static_cast<uint8>(EHxlbHighlightType::None);
+		}
 
 		HexCoords.Add(HexCoord);
 		HexInfos.Add(Info);
@@ -346,7 +376,14 @@ void UHxlbHexMapComponent::UpdateSelection(FHxlbSelectionState& NewSelectionStat
 	for (FIntPoint HexCoord : NewSelectionState.RemovingHexes)
 	{
 		HxlbPackedData::FHexInfo Info{};
-		Info.HighlightType = static_cast<uint8>(EHxlbHighlightType::Removing);
+		if (NewSelectionState.bWriteRemovingToRT)
+		{
+			Info.HighlightType = static_cast<uint8>(EHxlbHighlightType::Removing);
+		}
+		else
+		{
+			Info.HighlightType = static_cast<uint8>(EHxlbHighlightType::None);
+		}
 
 		HexCoords.Add(HexCoord);
 		HexInfos.Add(Info);
@@ -376,7 +413,7 @@ void UHxlbHexMapComponent::RefreshLandscapeRT(ALandscape* TargetLandscape)
 		return;
 	}
 
-	if (!MapSettings.bEnableOverlay || !MapSettings.OverlaySettings.TargetLandscape.IsValid())
+	if (MapSettings.GridMode != EHexGridMode::Landscape || !MapSettings.OverlaySettings.TargetLandscape.IsValid())
 	{
 		UKismetRenderingLibrary::ClearRenderTarget2D(GetOwner(), LandscapeRT);
 		return;

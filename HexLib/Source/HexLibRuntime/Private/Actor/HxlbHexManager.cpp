@@ -115,7 +115,7 @@ void AHxlbHexManager::AddHex(FIntPoint& AxialCoords, bool bCreateProxy)
 	}
 	
 	FActorSpawnParameters SpawnInfo;
-	SpawnInfo.Name = MakeUniqueObjectName(this, HexActorClass, FName("HexProxy"));
+	SpawnInfo.Name = MakeUniqueObjectName(this, HexActorClass, FName("HexTile"));
 	SpawnInfo.Owner = this;
 
 	UHxlbHex* Hex = MapComponent->GetOrCreateHex(AxialCoords);

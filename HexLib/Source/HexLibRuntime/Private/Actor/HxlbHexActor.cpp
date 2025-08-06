@@ -48,7 +48,7 @@ AHxlbHexActor::AHxlbHexActor(const FObjectInitializer& Initializer): Super(Initi
 	SetRootComponent(TransformComponent);
 	
 #if WITH_EDITORONLY_DATA
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> OverlayMeshFinder(TEXT("/HxLib/Meshes/SM_HexGridlinesTest_pointy_1m.SM_HexGridlinesTest_pointy_1m"));
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> OverlayMeshFinder(TEXT("/HxLib/Meshes/SM_HexTile.SM_HexTile"));
 	GridMesh = OverlayMeshFinder.Object;
 #endif
 	
@@ -82,7 +82,7 @@ void AHxlbHexActor::InitializeHexActor(UHxlbHex* NewHex)
 	
 	SyncLocationAndScale();
 
-	if (GridMeshComponent != nullptr)
+	if (GridMeshComponent != nullptr && GridMeshComponent)
 	{
 		GridMeshComponent->SetRelativeScale3D(FVector(GridMeshScale, GridMeshScale, GridMeshScale));
 
@@ -139,11 +139,12 @@ void AHxlbHexActor::SetDebugColor(FLinearColor DebugColor)
 		return;
 	}
 	
+	/*
 	auto* MID0 = Cast<UMaterialInstanceDynamic>(GridMeshComponent->GetMaterial(0));
 	if (MID0)
 	{
 		MID0->SetVectorParameterValue("InnerColor_Preview", DebugColor);
-	}
+	}*/
 }
 
 void AHxlbHexActor::SetHighlightColor(FLinearColor HighlightColor)
@@ -153,10 +154,11 @@ void AHxlbHexActor::SetHighlightColor(FLinearColor HighlightColor)
 		return;
 	}
 	
+	/*
 	auto* MID0 = Cast<UMaterialInstanceDynamic>(GridMeshComponent->GetMaterial(0));
 	if (MID0)
 	{
 		MID0->SetVectorParameterValue("InnerColor_Highlight", HighlightColor);
-	}
+	}*/
 }
 #endif 

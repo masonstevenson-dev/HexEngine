@@ -122,7 +122,8 @@ public:
 
 protected:
 	void HandleRefreshLandscapeRT();
-	void HandleEnableOverlay();
+	void HandleLandscapeOverlay();
+	void HandleSpawnGridActors();
 	void SetOverlayMaterialOnPPV();
 	void RefreshOverlayMaterialParameters();
 	
