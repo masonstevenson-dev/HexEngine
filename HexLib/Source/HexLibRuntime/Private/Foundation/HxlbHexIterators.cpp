@@ -95,6 +95,71 @@ FIntPoint FHxlbRadialIterator::Get()
 	return Current + Origin;
 }
 
+FHxlbRingIterator::FHxlbRingIterator(FIntPoint NewOrigin, int32 NewRadius)
+{
+	if (NewRadius < 0)
+	{
+		return;
+	}
+	
+	Origin = NewOrigin;
+	Radius = NewRadius;
+	CurrentDirection = 0;
+	SideCount = 0;
+	
+	bFirstIteration = true;
+
+	if (Radius == 0)
+	{
+		// Special case. If radius is zero we just return the origin. We set CurrentDirection to 6 so that subsequent
+		// calls to Next() don't update anything.
+		CubeCurrent = HexMath::AxialToCube(Origin);
+		CurrentDirection = 6;
+	}
+	else
+	{
+		// note the 4 is arbitrary. We could start with any direction
+		CubeCurrent = HexMath::AxialToCube(Origin) + (HexMath::DirectionIndexToCube(4) * Radius);
+	}
+	
+	// finish initialization
+	bIsInitialized = true;
+}
+
+bool FHxlbRingIterator::Next()
+{
+	if (!bIsInitialized)
+	{
+		return false;
+	}
+	if (bFirstIteration)
+	{
+		bFirstIteration = false;
+		return true;
+	}
+	if (CurrentDirection >= 6)
+	{
+		return false;
+	}
+	
+	// Get Neighbor
+	CubeCurrent = CubeCurrent + HexMath::DirectionIndexToCube(CurrentDirection);
+	SideCount++;
+	
+	if (SideCount >= Radius)
+	{
+		CurrentDirection += 1;
+		SideCount = 0;
+	}
+	
+	return true;
+}
+
+FIntPoint FHxlbRingIterator::Get()
+{
+	return HexMath::CubeToAxial(CubeCurrent);
+}
+
 FHxlbRectangularIterator::FHxlbRectangularIterator(FIntPoint NewOrigin, int32 NewHalfWidth, int32 NewHalfHeight)
 {
 	if (NewHalfWidth < 1 || NewHalfHeight < 1)

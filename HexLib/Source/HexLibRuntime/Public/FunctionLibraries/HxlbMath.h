@@ -46,6 +46,24 @@ enum class EHexOrientation: uint8
 	Pointy
 };
 
+// The directions that each neighbor hex would be labeled if starting from a single flat or pointy hex.
+UENUM(BlueprintType)
+enum class EHexDirection: uint8
+{
+	Flat_North,
+	Flat_NorthEast,
+	Flat_SouthEast,
+	Flat_South,
+	Flat_SouthWest,
+	Flat_NorthWest,
+	Pointy_NorthEast,
+	Pointy_East,
+	Pointy_SouthEast,
+	Pointy_SouthWest,
+	Pointy_West,
+	Pointy_NorthWest
+};
+
 UCLASS()
 class HEXLIBRUNTIME_API UHxlbMath : public UBlueprintFunctionLibrary
 {
@@ -107,6 +125,15 @@ public:
 
 	UFUNCTION(BlueprintPure, Category="Hex Math")
 	static int32 AxialDistance(FIntPoint AxialCoordA, FIntPoint AxialCoordB);
+	
+	UFUNCTION(BlueprintPure, Category="Hex Math")
+	static FIntVector DirectionToCube(EHexDirection Direction);
+	
+	UFUNCTION(BlueprintPure, Category="Hex Math")
+	static FIntVector CubeNeighbor(FIntVector CubeCoord, EHexDirection Direction);
+	
+	UFUNCTION(BlueprintPure, Category="Hex Math")
+	static FIntPoint AxialNeighbor(FIntPoint AxialCoord, EHexDirection Direction);
 
 // Helpers and non-BP exposed functions -------------------------------------------------------------------------------
 public:
@@ -143,6 +170,9 @@ public:
 	static int32 TextureToPixelBuffer(FIntPoint TextureCoords, int32 BufferSizeX);
 	static bool AxialToPixelBuffer(FIntPoint AxialCoord, int32 TextureSizeX, int32 TextureSizeY, int32& BufferIndex, uint32 BoundaryOffset = 2); // TODO(): unit test this
 
+	// for when you want to walk through each direction in order
+	static FIntVector DirectionIndexToCube(int32 Index);
+	
 protected:
 	static FVector GetHexCornerHelper(FVector Center, double Size, int32 CornerIndex, double OffsetDeg);
 

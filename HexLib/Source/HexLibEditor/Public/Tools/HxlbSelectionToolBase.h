@@ -52,6 +52,7 @@ enum class EHxlbGridToolSelectionMode: uint8
 	Single,
 	Rectangular,
 	Hexagonal,
+	Ring,
 	MAX UMETA(Hidden),
 };
 

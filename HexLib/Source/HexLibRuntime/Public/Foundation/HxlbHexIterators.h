@@ -54,6 +54,7 @@ protected:
 	bool bFirstIteration = false;
 };
 
+// Gets all hexes within a given radius.
 USTRUCT()
 struct HEXLIBRUNTIME_API FHxlbRadialIterator: public FHxlbHexIterator
 {
@@ -68,6 +69,25 @@ public:
 
 protected:
 	int32 Radius = 0;
+};
+
+// Gets all hexes on the border of a given radius. Can set a search range to automatically update increment the ring.
+USTRUCT()
+struct HEXLIBRUNTIME_API FHxlbRingIterator: public FHxlbHexIterator
+{
+	GENERATED_BODY()
+	
+	FHxlbRingIterator() = default;
+	FHxlbRingIterator(FIntPoint NewOrigin, int32 NewRadius);
+	
+	virtual bool Next() override;
+	virtual FIntPoint Get() override;
+	
+protected:
+	FIntVector CubeCurrent = FIntVector::ZeroValue;
+	int32 Radius = 0;
+	int32 CurrentDirection = 0;
+	int32 SideCount = 0;
 };
 
 USTRUCT()

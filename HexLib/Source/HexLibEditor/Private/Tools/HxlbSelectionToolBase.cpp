@@ -383,6 +383,25 @@ void UHxlbSelectionToolBase::OnClickDrag(const FInputDeviceRay& DragPos)
 				
 				break;
 			}
+		case (EHxlbGridToolSelectionMode::Ring):
+			{
+				if (bIsRemoving)
+				{
+					int32 Radius = HexMath::AxialDistance(SelectionState.FirstSelectedHex, HexCoords);
+					auto Iterator = FHxlbRingIterator(SelectionState.FirstSelectedHex, Radius);
+					UpdateRemovingHexes(Iterator);
+				}
+				else if (!SelectionState.SelectingHexes.IsEmpty())
+				{
+					int32 Radius = HexMath::AxialDistance(SelectionState.FirstSelectedHex, HexCoords);
+					auto Iterator = FHxlbRingIterator(SelectionState.FirstSelectedHex, Radius);
+					UpdateSelectingHexes(Iterator);
+				}
+				
+				PublishSelection();
+				
+				break;
+			}
 		case (EHxlbGridToolSelectionMode::Rectangular):
 			{
 				if (bIsRemoving)

@@ -203,6 +203,43 @@ int32 UHxlbMath::AxialDistance(FIntPoint AxialCoordA, FIntPoint AxialCoordB)
 	return CubeDistance(AxialToCube(AxialCoordA), AxialToCube(AxialCoordB));
 }
 
+FIntVector UHxlbMath::DirectionToCube(EHexDirection Direction)
+{
+	switch (Direction)
+	{
+	case EHexDirection::Flat_North:
+	case EHexDirection::Pointy_NorthWest:
+		return FIntVector(0, -1, 1);
+	case EHexDirection::Flat_NorthEast:
+	case EHexDirection::Pointy_NorthEast:
+		return FIntVector(1, -1, 0);
+	case EHexDirection::Flat_SouthEast:
+	case EHexDirection::Pointy_East:
+		return FIntVector(1, 0, -1);
+	case EHexDirection::Flat_South:
+	case EHexDirection::Pointy_SouthEast:
+		return FIntVector(0, 1, -1);
+	case EHexDirection::Flat_SouthWest:
+	case EHexDirection::Pointy_SouthWest:
+		return FIntVector(-1, 1, 0);
+	case EHexDirection::Flat_NorthWest:
+	case EHexDirection::Pointy_West:
+		return FIntVector(-1, 0, 1);
+	default:
+		return FIntVector(0, 0, 0);
+	}
+}
+
+FIntVector UHxlbMath::CubeNeighbor(FIntVector CubeCoord, EHexDirection Direction)
+{
+	return CubeCoord + DirectionToCube(Direction);
+}
+
+FIntPoint UHxlbMath::AxialNeighbor(FIntPoint AxialCoord, EHexDirection Direction)
+{
+	return CubeToAxial(CubeNeighbor(AxialToCube(AxialCoord), Direction));
+}
+
 FIntVector UHxlbMath::ReflectCube_Q(FIntVector CubeCoord)
 {
 	return FIntVector(HEX_Q(CubeCoord), HEX_S(CubeCoord), HEX_R(CubeCoord));
@@ -291,4 +328,18 @@ bool UHxlbMath::AxialToPixelBuffer(FIntPoint AxialCoord, int32 TextureSizeX, int
 	BufferIndex = TextureToPixelBuffer(TextureCoord, TextureSizeX);
 	int32 BufferSize = TextureSizeX * TextureSizeY;
 	return BufferSize > 0 && BufferIndex >= 0 && BufferIndex < BufferSize;
+}
+
+FIntVector UHxlbMath::DirectionIndexToCube(int32 Index)
+{
+	static FIntVector Directions[6] = {
+		FIntVector(1, 0, -1),
+		FIntVector(1, -1, 0),
+		FIntVector(0, -1, 1),
+		FIntVector(-1, 0, 1),
+		FIntVector(-1, 1, 0),
+		FIntVector(0, 1, -1)
+	};
+	
+	return Directions[Index];
 }
