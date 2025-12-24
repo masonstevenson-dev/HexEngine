@@ -190,10 +190,12 @@ public:
 protected:
 	void RefreshLandscapeRT(ALandscape* TargetLandscape);
 	UTextureRenderTarget2D* GetHexInfoRT();
+	virtual UTextureRenderTarget2D* GetHexInfoEditorRT();
+	virtual UTextureRenderTarget2D* GetHexInfoGameRT();
 	void RefreshGridlines();
 
-	void WriteHexInfo(TArray<FIntPoint>& HexCoords, TArray<HxlbPackedData::FHexInfo> HexInfos, uint16 BitMask);
-	void WriteHexInfoSingle(FIntPoint HexCoord, HxlbPackedData::FHexInfo HexInfo, uint16 BitMask);
+	void WriteHexInfo_Bulk16(TArray<FIntPoint>& HexCoords, TArray<uint16> RawInfoArray, uint16 BitMask);
+	void WriteHexInfo_16(FIntPoint HexCoord, uint16 RawInfo, uint16 BitMask);
 
 	void SetHexHighlightType(FIntPoint HexCoord, EHxlbHighlightType HighlightType);
 	

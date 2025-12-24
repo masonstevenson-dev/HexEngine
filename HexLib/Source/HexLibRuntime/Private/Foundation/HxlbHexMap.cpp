@@ -76,7 +76,7 @@ bool UHxlbHexMapComponent::IsValidAxialCoord(FIntPoint AxialCoord)
 	if (MapSettings.GridMode == EHexGridMode::Landscape)
 	{
 		// Check valid in texture
-		TObjectPtr<UTextureRenderTarget2D> HexInfoRT = MapSettings.OverlaySettings.PerHexDataRT;
+		UTextureRenderTarget2D* HexInfoRT = GetHexInfoRT();
 		if (!HexInfoRT)
 		{
 			return false;
@@ -326,7 +326,7 @@ void UHxlbHexMapComponent::HoverHex(FHxlbHexCoordDelta& HoverState, bool bIsSele
 void UHxlbHexMapComponent::UpdateSelection(FHxlbSelectionState& NewSelectionState)
 {
 	TArray<FIntPoint> HexCoords;
-	TArray<HxlbPackedData::FHexInfo> HexInfos;
+	TArray<uint16> HexInfos;
 	TSet<FIntPoint> HexesToClear;
 	HexesToClear.Append(SelectionState.SelectingHexes);
 	HexesToClear.Append(SelectionState.RemovingHexes);
@@ -354,7 +354,7 @@ void UHxlbHexMapComponent::UpdateSelection(FHxlbSelectionState& NewSelectionStat
 		}
 
 		HexCoords.Add(HexCoord);
-		HexInfos.Add(Info);
+		HexInfos.Add(Info.Raw);
 		HexesToClear.Remove(HexCoord);
 	}
 	for (FIntPoint HexCoord : NewSelectionState.SelectedHexes)
@@ -370,7 +370,7 @@ void UHxlbHexMapComponent::UpdateSelection(FHxlbSelectionState& NewSelectionStat
 		}
 
 		HexCoords.Add(HexCoord);
-		HexInfos.Add(Info);
+		HexInfos.Add(Info.Raw);
 		HexesToClear.Remove(HexCoord);
 	}
 	for (FIntPoint HexCoord : NewSelectionState.RemovingHexes)
@@ -386,7 +386,7 @@ void UHxlbHexMapComponent::UpdateSelection(FHxlbSelectionState& NewSelectionStat
 		}
 
 		HexCoords.Add(HexCoord);
-		HexInfos.Add(Info);
+		HexInfos.Add(Info.Raw);
 		HexesToClear.Remove(HexCoord);
 	}
 	for (FIntPoint HexCoord : HexesToClear)
@@ -395,11 +395,11 @@ void UHxlbHexMapComponent::UpdateSelection(FHxlbSelectionState& NewSelectionStat
 		Info.HighlightType = static_cast<uint8>(EHxlbHighlightType::None);
 
 		HexCoords.Add(HexCoord);
-		HexInfos.Add(Info);
+		HexInfos.Add(Info.Raw);
 	}
 	
 	uint16 InfoMask = HxlbPackedData::FHexInfo(0, HxlbPackedData::FM_HighlightType).Raw;
-	WriteHexInfo(HexCoords, HexInfos, InfoMask);
+	WriteHexInfo_Bulk16(HexCoords, HexInfos, InfoMask);
 
 	SelectionState = NewSelectionState;
 }
@@ -423,6 +423,26 @@ void UHxlbHexMapComponent::RefreshLandscapeRT(ALandscape* TargetLandscape)
 }
 
 UTextureRenderTarget2D* UHxlbHexMapComponent::GetHexInfoRT()
+{
+	UWorld* World = GetWorld();
+	if (!World)
+	{
+		return nullptr;
+	}
+	
+	if (World->WorldType == EWorldType::Editor)
+	{
+		return GetHexInfoEditorRT();
+	}
+	else if (World->WorldType == EWorldType::Game || World->WorldType == EWorldType::PIE)
+	{
+		return GetHexInfoGameRT();
+	}
+	
+	return nullptr;
+}
+
+UTextureRenderTarget2D* UHxlbHexMapComponent::GetHexInfoEditorRT()
 {
 	UTextureRenderTarget2D* PerHexDataRT = MapSettings.OverlaySettings.PerHexDataRT.Get();
 	if (!PerHexDataRT)
@@ -449,6 +469,12 @@ UTextureRenderTarget2D* UHxlbHexMapComponent::GetHexInfoRT()
 	}
 
 	return PerHexDataRT;
+}
+
+UTextureRenderTarget2D* UHxlbHexMapComponent::GetHexInfoGameRT()
+{
+	// stubbed out. Override this fn to define a custom RT for your game.
+	return nullptr;
 }
 
 void UHxlbHexMapComponent::RefreshGridlines()
@@ -639,13 +665,13 @@ void UHxlbHexMapComponent::RefreshGridlines()
 	);
 }
 
-void UHxlbHexMapComponent::WriteHexInfo(TArray<FIntPoint>& HexCoords, TArray<HxlbPackedData::FHexInfo> HexInfos, uint16 BitMask)
+void UHxlbHexMapComponent::WriteHexInfo_Bulk16(TArray<FIntPoint>& HexCoords, TArray<uint16> RawInfoArray, uint16 BitMask)
 {
 	if (HexCoords.Num() == 0)
 	{
 		return;
 	}
-	if (HexCoords.Num() != HexInfos.Num())
+	if (HexCoords.Num() != RawInfoArray.Num())
 	{
 		HXLB_LOG(LogHxlbRuntime, Error, TEXT("UHxlbHexMapComponent::WriteHexInfo HexCoords.Num() != HexInfos.Num()."));
 		return;
@@ -661,13 +687,13 @@ void UHxlbHexMapComponent::WriteHexInfo(TArray<FIntPoint>& HexCoords, TArray<Hxl
 	{
 		for (int Index = 0; Index < HexCoords.Num(); Index++)
 		{
-			WriteHexInfoSingle(HexCoords[Index], HexInfos[Index], BitMask);
+			WriteHexInfo_16(HexCoords[Index], RawInfoArray[Index], BitMask);
 		}
 	}
 	else
 	{
 		TArray<int32> BufferIndices;
-		TArray<HxlbPackedData::FHexInfo> FilteredInfos;
+		TArray<uint16> FilteredInfos;
 		BufferIndices.Reserve(HexCoords.Num());
 		FilteredInfos.Reserve(HexCoords.Num());
 		int32 FailedConversions = 0;
@@ -682,7 +708,7 @@ void UHxlbHexMapComponent::WriteHexInfo(TArray<FIntPoint>& HexCoords, TArray<Hxl
 			}
 
 			BufferIndices.Add(BufferIndex);
-			FilteredInfos.Add(HexInfos[Index]);
+			FilteredInfos.Add(RawInfoArray[Index]);
 		}
 
 		if (FailedConversions > 0)
@@ -770,7 +796,7 @@ void UHxlbHexMapComponent::WriteHexInfo(TArray<FIntPoint>& HexCoords, TArray<Hxl
 			for (int LookupIndex = 0; LookupIndex < InBufferIndices.Num(); LookupIndex++)
 			{
 				int32 BufferIndex = InBufferIndices[LookupIndex];
-				UpdateBuffer[BufferIndex].Raw = (UpdateBuffer[BufferIndex].Raw & ~InBitMask) | (InHexInfos[LookupIndex].Raw & InBitMask);
+				UpdateBuffer[BufferIndex].Raw = (UpdateBuffer[BufferIndex].Raw & ~InBitMask) | (InHexInfos[LookupIndex] & InBitMask);
 			}
 
 			BufferRowStride = 0;
@@ -794,7 +820,7 @@ void UHxlbHexMapComponent::WriteHexInfo(TArray<FIntPoint>& HexCoords, TArray<Hxl
 	}
 }
 
-void UHxlbHexMapComponent::WriteHexInfoSingle(FIntPoint HexCoord, HxlbPackedData::FHexInfo HexInfo, uint16 BitMask)
+void UHxlbHexMapComponent::WriteHexInfo_16(FIntPoint HexCoord, uint16 RawInfo, uint16 BitMask)
 {
 	UTextureRenderTarget2D* PerHexDataRT = GetHexInfoRT();
 	if (!PerHexDataRT)
@@ -810,7 +836,7 @@ void UHxlbHexMapComponent::WriteHexInfoSingle(FIntPoint HexCoord, HxlbPackedData
 	}
 
 	ENQUEUE_RENDER_COMMAND(WriteHexInfoSingle)(
-		[InRT = PerHexDataRT, InPixelCoords = PixelCoords, InHexInfo = HexInfo, InBitMask = BitMask](FRHICommandListImmediate& RHICmdList)
+		[InRT = PerHexDataRT, InPixelCoords = PixelCoords, InHexInfo = RawInfo, InBitMask = BitMask](FRHICommandListImmediate& RHICmdList)
 		{
 			TRACE_CPUPROFILER_EVENT_SCOPE(HXLB_WriteHexInfo_Single);
 			
@@ -846,7 +872,7 @@ void UHxlbHexMapComponent::WriteHexInfoSingle(FIntPoint HexCoord, HxlbPackedData
 
 			auto OldHexInfo = HxlbPackedData::FHexInfo(SurfaceData[0]);
 			HxlbPackedData::FHexInfo UpdatedHexInfo;
-			UpdatedHexInfo.Raw = (OldHexInfo.Raw & ~InBitMask) | (InHexInfo.Raw & InBitMask);
+			UpdatedHexInfo.Raw = (OldHexInfo.Raw & ~InBitMask) | (InHexInfo & InBitMask);
 			
 			FUpdateTextureRegion2D RegionData(InPixelCoords.X, InPixelCoords.Y, 0, 0, 1, 1);
 			uint8* RawData = reinterpret_cast<uint8*>(&UpdatedHexInfo);
@@ -861,5 +887,5 @@ void UHxlbHexMapComponent::SetHexHighlightType(FIntPoint HexCoord, EHxlbHighligh
 	HexInfo.HighlightType = static_cast<uint8>(HighlightType);
 	uint16 InfoMask = HxlbPackedData::FHexInfo(0, HxlbPackedData::FM_HighlightType).Raw;
 	
-	WriteHexInfoSingle(HexCoord, HexInfo, InfoMask);
+	WriteHexInfo_16(HexCoord, HexInfo.Raw, InfoMask);
 }
