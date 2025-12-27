@@ -72,7 +72,7 @@ class HEXLIBEDITOR_API UHxlbMapSettingsToolSettings : public UInteractiveToolPro
 
 public:
 	UPROPERTY(EditAnywhere, Category = "Tool Settings")
-	TSubclassOf<AHxlbHexManager> ManagerClass = AHxlbHexManager::StaticClass();
+	TSubclassOf<AHxlbHexManager> ManagerClass = ADefaultHexManager::StaticClass();
 
 	// This property is marked as "TransientToolProperty" because it is loaded and saved from the active HexManager in
 	// the scene.

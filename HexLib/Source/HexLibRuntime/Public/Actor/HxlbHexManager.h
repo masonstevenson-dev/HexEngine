@@ -40,11 +40,15 @@
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnMapEditorUpdate);
 
-UCLASS(Blueprintable, meta=(DisplayName="Hex Manager"), showcategories=(Rendering))
+UCLASS(Abstract)
 class HEXLIBRUNTIME_API AHxlbHexManager : public AInfo
 {
 	GENERATED_BODY()
 
+// constants
+public:
+	static FName MapComponentName;
+	
 public:
 	AHxlbHexManager(const FObjectInitializer& Initializer);
 	
@@ -61,7 +65,7 @@ public:
 	// that both the HexManager and its MapComponent exist and are valid.
 	virtual FHxlbMapSettings& MapSettings() { return MapComponent->MapSettings; }
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="HexEngine")
+	UPROPERTY()
 	TObjectPtr<UHxlbHexMapComponent> MapComponent;
 	
 	FOnMapEditorUpdate OnMapEditorUpdate;
@@ -83,4 +87,19 @@ protected:
 
 	UPROPERTY()
 	TWeakObjectPtr<APostProcessVolume> OverlayPPV;
+};
+
+UCLASS(Blueprintable, meta=(DisplayName="Hex Manager"), showcategories=(Rendering))
+class HEXLIBRUNTIME_API ADefaultHexManager : public AHxlbHexManager
+{
+	GENERATED_BODY()
+
+public:
+	ADefaultHexManager(const FObjectInitializer& Initializer);
+	
+	// Exposed so you can see this in the editor. Separated from the base class so that child classes can override the
+	// base map component and expose their overridden version without having two different MapComponents show up in the
+	// editor.
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="HexEngine")
+	TObjectPtr<UHxlbHexMapComponent> HexMap;
 };

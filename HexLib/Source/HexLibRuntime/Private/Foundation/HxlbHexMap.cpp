@@ -257,7 +257,6 @@ void UHxlbHexMapComponent::Update(FHxlbMapSettings& NewMapSettings, FHxlbHexMapU
 		FVector LandscapeActorScale = TargetLandscape->GetActorScale();
 		LandscapeHalfLengthCm = (LandscapeActorScale.X * LandscapeResolution) / 2;
 	}
-#endif
 	
 	for (auto HexIterator = HexData.CreateIterator(); HexIterator; ++HexIterator)
 	{
@@ -274,8 +273,7 @@ void UHxlbHexMapComponent::Update(FHxlbMapSettings& NewMapSettings, FHxlbHexMapU
 		{
 			continue;
 		}
-
-#if WITH_EDITOR
+		
 		if (UpdateOptions.bRefreshTagSettings)
 		{
 			Hex->ProcessGameplayTags();

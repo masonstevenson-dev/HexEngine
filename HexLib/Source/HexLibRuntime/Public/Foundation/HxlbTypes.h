@@ -110,7 +110,7 @@ enum class EHxlbHighlightType : uint8
 
 // Most of the time, a raw FIntPoint is fine for describing a hex coordinate. Occasionally, we need to also check if the
 // coordinate is set.
-USTRUCT()
+USTRUCT(Blueprintable)
 struct FHxlbHexCoord
 {
 	GENERATED_BODY()

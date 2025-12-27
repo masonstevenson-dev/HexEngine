@@ -38,12 +38,14 @@
 #include "Foundation/HxlbHexMap.h"
 #include "Macros/HexLibLoggingMacros.h"
 
+FName AHxlbHexManager::MapComponentName(TEXT("Hex Map Component"));
+
 AHxlbHexManager::AHxlbHexManager(const FObjectInitializer& Initializer): Super(Initializer)
 {
 	TransformComponent = CreateDefaultSubobject<USceneComponent>(TEXT("TransformComponent"));
 	SetRootComponent(TransformComponent);
 	
-	MapComponent = CreateDefaultSubobject<UHxlbHexMapComponent>("Hex Map Component");
+	MapComponent = CreateDefaultSubobject<UHxlbHexMapComponent>(AHxlbHexManager::MapComponentName);
 	HexActorClass = AHxlbHexActor::StaticClass();
 	
 #if WITH_EDITORONLY_DATA
@@ -131,4 +133,9 @@ void AHxlbHexManager::AddHex(FIntPoint& AxialCoords, bool bCreateProxy)
 		
 		Hex->GetHexActor()->AttachToActor(this, FAttachmentTransformRules::KeepRelativeTransform);
 	}
+}
+
+ADefaultHexManager::ADefaultHexManager(const FObjectInitializer& Initializer): Super(Initializer)
+{
+	HexMap = MapComponent;
 }
