@@ -225,6 +225,7 @@ void UHxlbHexMapComponent::CommitBulkEdits()
 	}
 }
 
+#if WITH_EDITOR
 void UHxlbHexMapComponent::Update(FHxlbMapSettings& NewMapSettings, FHxlbHexMapUpdateOptions UpdateOptions)
 {
 	MapSettings = NewMapSettings;
@@ -237,8 +238,7 @@ void UHxlbHexMapComponent::Update(FHxlbMapSettings& NewMapSettings, FHxlbHexMapU
 	{
 		RefreshGridlines();
 	}
-
-#if WITH_EDITOR
+	
 	ALandscape* TargetLandscape = MapSettings.OverlaySettings.TargetLandscape.Get();
 	if (TargetLandscape)
 	{
@@ -278,7 +278,6 @@ void UHxlbHexMapComponent::Update(FHxlbMapSettings& NewMapSettings, FHxlbHexMapU
 		{
 			Hex->ProcessGameplayTags();
 		}
-#endif
 	}
 }
 
@@ -396,11 +395,14 @@ void UHxlbHexMapComponent::UpdateSelection(FHxlbSelectionState& NewSelectionStat
 		HexInfos.Add(Info.Raw);
 	}
 	
-	uint16 InfoMask = HxlbPackedData::FHexInfo(0, HxlbPackedData::FM_HighlightType).Raw;
-	WriteHexInfo_Bulk16(HexCoords, HexInfos, InfoMask);
+	uint16 InfoMask = HxlbPackedData::FHexInfo(/*R=*/0, /*G=*/HxlbPackedData::FM_HighlightType).Raw;
+	
+	UTextureRenderTarget2D* PerHexDataRT = GetHexInfoEditorRT();
+	WriteHexInfo_Bulk16(PerHexDataRT, HexCoords, HexInfos, InfoMask);
 
 	SelectionState = NewSelectionState;
 }
+#endif // WITH_EDITOR
 
 void UHxlbHexMapComponent::RefreshLandscapeRT(ALandscape* TargetLandscape)
 {
@@ -663,7 +665,7 @@ void UHxlbHexMapComponent::RefreshGridlines()
 	);
 }
 
-void UHxlbHexMapComponent::WriteHexInfo_Bulk16(TArray<FIntPoint>& HexCoords, TArray<uint16> RawInfoArray, uint16 BitMask)
+void UHxlbHexMapComponent::WriteHexInfo_Bulk16(UTextureRenderTarget2D* PerHexDataRT, TArray<FIntPoint>& HexCoords, TArray<uint16> RawInfoArray, uint16 BitMask)
 {
 	if (HexCoords.Num() == 0)
 	{
@@ -674,7 +676,6 @@ void UHxlbHexMapComponent::WriteHexInfo_Bulk16(TArray<FIntPoint>& HexCoords, TAr
 		HXLB_LOG(LogHxlbRuntime, Error, TEXT("UHxlbHexMapComponent::WriteHexInfo HexCoords.Num() != HexInfos.Num()."));
 		return;
 	}
-	UTextureRenderTarget2D* PerHexDataRT = GetHexInfoRT();
 	if (!PerHexDataRT)
 	{
 		return;
@@ -685,7 +686,7 @@ void UHxlbHexMapComponent::WriteHexInfo_Bulk16(TArray<FIntPoint>& HexCoords, TAr
 	{
 		for (int Index = 0; Index < HexCoords.Num(); Index++)
 		{
-			WriteHexInfo_16(HexCoords[Index], RawInfoArray[Index], BitMask);
+			WriteHexInfo_16(PerHexDataRT, HexCoords[Index], RawInfoArray[Index], BitMask);
 		}
 	}
 	else
@@ -818,9 +819,8 @@ void UHxlbHexMapComponent::WriteHexInfo_Bulk16(TArray<FIntPoint>& HexCoords, TAr
 	}
 }
 
-void UHxlbHexMapComponent::WriteHexInfo_16(FIntPoint HexCoord, uint16 RawInfo, uint16 BitMask)
+void UHxlbHexMapComponent::WriteHexInfo_16(UTextureRenderTarget2D* PerHexDataRT, FIntPoint HexCoord, uint16 RawInfo, uint16 BitMask)
 {
-	UTextureRenderTarget2D* PerHexDataRT = GetHexInfoRT();
 	if (!PerHexDataRT)
 	{
 		return;
@@ -885,5 +885,6 @@ void UHxlbHexMapComponent::SetHexHighlightType(FIntPoint HexCoord, EHxlbHighligh
 	HexInfo.HighlightType = static_cast<uint8>(HighlightType);
 	uint16 InfoMask = HxlbPackedData::FHexInfo(0, HxlbPackedData::FM_HighlightType).Raw;
 	
-	WriteHexInfo_16(HexCoord, HexInfo.Raw, InfoMask);
+	UTextureRenderTarget2D* PerHexDataRT = GetHexInfoRT();
+	WriteHexInfo_16(PerHexDataRT, HexCoord, HexInfo.Raw, InfoMask);
 }

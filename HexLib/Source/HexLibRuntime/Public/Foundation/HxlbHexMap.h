@@ -176,10 +176,12 @@ public:
 	virtual void ClearBulkEditProxy();
 	virtual void CommitBulkEdits();
 	
+#if WITH_EDITORONLY_DATA
 	void Update(FHxlbMapSettings& NewMapSettings, FHxlbHexMapUpdateOptions UpdateOptions = FHxlbHexMapUpdateOptions());
 	void RefreshLandscapeData();
 	void HoverHex(FHxlbHexCoordDelta& HoverState, bool bIsSelecting = true);
 	void UpdateSelection(FHxlbSelectionState& NewSelectionState);
+#endif
 	
 	double GetHexSize() { return MapSettings.HexSize; }
 	FIntPoint GetGridOrigin() { return GridOrigin; }
@@ -194,8 +196,8 @@ protected:
 	virtual UTextureRenderTarget2D* GetHexInfoGameRT();
 	void RefreshGridlines();
 
-	void WriteHexInfo_Bulk16(TArray<FIntPoint>& HexCoords, TArray<uint16> RawInfoArray, uint16 BitMask);
-	void WriteHexInfo_16(FIntPoint HexCoord, uint16 RawInfo, uint16 BitMask);
+	void WriteHexInfo_Bulk16(UTextureRenderTarget2D* PerHexDataRT, TArray<FIntPoint>& HexCoords, TArray<uint16> RawInfoArray, uint16 BitMask);
+	void WriteHexInfo_16(UTextureRenderTarget2D* PerHexDataRT, FIntPoint HexCoord, uint16 RawInfo, uint16 BitMask);
 
 	void SetHexHighlightType(FIntPoint HexCoord, EHxlbHighlightType HighlightType);
 	
