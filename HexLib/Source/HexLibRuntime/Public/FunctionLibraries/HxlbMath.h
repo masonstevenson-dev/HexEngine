@@ -142,14 +142,6 @@ public:
 	static FIntVector CubeRound(FVector FractionalCubeCoordinate);
 	static FIntPoint AxialRound(FVector2d FractionalAxialCoordinate);
 	
-	static FIntPoint CartesianToAxial(
-		FVector CartesianCoordinate,
-		double Size,
-		EHexOrientation Orientation = EHexOrientation::Pointy
-	);
-
-	static FVector AxialToCartesian(FIntPoint AxialCoordinate, double Size);
-	
 	// Reflection
 	static FIntVector ReflectCube_Q(FIntVector CubeCoord);
 	static FIntVector ReflectCube_R(FIntVector CubeCoord);
@@ -174,6 +166,16 @@ public:
 	static FIntVector DirectionIndexToCube(int32 Index);
 	
 protected:
+	// protected because you almost certainly want to use WorldToAxial instead.
+	static FIntPoint CartesianToAxial(
+		FVector CartesianCoordinate,
+		double Size,
+		EHexOrientation Orientation = EHexOrientation::Pointy
+	);
+
+	// protected because you almost certainly want to use AxialToWorld instead.
+	static FVector AxialToCartesian(FIntPoint AxialCoordinate, double Size);
+	
 	static FVector GetHexCornerHelper(FVector Center, double Size, int32 CornerIndex, double OffsetDeg);
 
 // End helpers and non-BP exposed functions ----------------------------------------------------------------------------
