@@ -684,6 +684,8 @@ void UHxlbHexMapComponent::WriteHexInfo_Bulk16(UTextureRenderTarget2D* PerHexDat
 	bool bUseBatchedUpdate = HexCoords.Num() > kBatchedUpdateThreshold;
 	if (!bUseBatchedUpdate)
 	{
+		// HXLB_LOG(LogHxlbRuntime, Warning, TEXT("Using Single Update."));
+		
 		for (int Index = 0; Index < HexCoords.Num(); Index++)
 		{
 			WriteHexInfo_16(PerHexDataRT, HexCoords[Index], RawInfoArray[Index], BitMask);
@@ -691,6 +693,8 @@ void UHxlbHexMapComponent::WriteHexInfo_Bulk16(UTextureRenderTarget2D* PerHexDat
 	}
 	else
 	{
+		// HXLB_LOG(LogHxlbRuntime, Warning, TEXT("Using Batch Update."));
+		
 		TArray<int32> BufferIndices;
 		TArray<uint16> FilteredInfos;
 		BufferIndices.Reserve(HexCoords.Num());
@@ -738,7 +742,7 @@ void UHxlbHexMapComponent::WriteHexInfo_Bulk16(UTextureRenderTarget2D* PerHexDat
 			
 			const FTexture2DRHIRef TextureRHI = RTResource->GetTexture2DRHI();
 			const int32 BlockBytes = GPixelFormats[TextureRHI->GetFormat()].BlockBytes;
-			if (BlockBytes != sizeof(HxlbPackedData::FHexInfo))
+			if (BlockBytes != sizeof(uint16))
 			{
 				HXLB_LOG(LogHxlbRenderThread, Error, TEXT("Mismatch between hex info texture size and hex info packed data struct."));
 				return;
@@ -761,7 +765,7 @@ void UHxlbHexMapComponent::WriteHexInfo_Bulk16(UTextureRenderTarget2D* PerHexDat
 			// SurfaceDataFlags.SetLinearToGamma(false); 
 			// RHICmdList.ReadSurfaceData(TextureRHI, SurfaceRect, SurfaceData, SurfaceDataFlags);
 			
-			TArray<HxlbPackedData::FHexInfo> UpdateBuffer;
+			TArray<uint16> UpdateBuffer;
 			UpdateBuffer.SetNumUninitialized(SizeX * SizeY);
 			
 			uint32 BufferRowStride = 0;
@@ -795,7 +799,7 @@ void UHxlbHexMapComponent::WriteHexInfo_Bulk16(UTextureRenderTarget2D* PerHexDat
 			for (int LookupIndex = 0; LookupIndex < InBufferIndices.Num(); LookupIndex++)
 			{
 				int32 BufferIndex = InBufferIndices[LookupIndex];
-				UpdateBuffer[BufferIndex].Raw = (UpdateBuffer[BufferIndex].Raw & ~InBitMask) | (InHexInfos[LookupIndex] & InBitMask);
+				UpdateBuffer[BufferIndex] = (UpdateBuffer[BufferIndex] & ~InBitMask) | (InHexInfos[LookupIndex] & InBitMask);
 			}
 
 			BufferRowStride = 0;
@@ -850,7 +854,7 @@ void UHxlbHexMapComponent::WriteHexInfo_16(UTextureRenderTarget2D* PerHexDataRT,
 			
 			const FTexture2DRHIRef TextureRHI = RTResource->GetTexture2DRHI();
 			const int32 BlockBytes = GPixelFormats[TextureRHI->GetFormat()].BlockBytes;
-			if (BlockBytes != sizeof(HxlbPackedData::FHexInfo))
+			if (BlockBytes != sizeof(uint16))
 			{
 				HXLB_LOG(LogHxlbRenderThread, Error, TEXT("Mismatch between hex info texture size and hex info packed data struct."));
 				return;
@@ -868,9 +872,9 @@ void UHxlbHexMapComponent::WriteHexInfo_16(UTextureRenderTarget2D* PerHexDataRT,
 				return;
 			}
 
-			auto OldHexInfo = HxlbPackedData::FHexInfo(SurfaceData[0]);
-			HxlbPackedData::FHexInfo UpdatedHexInfo;
-			UpdatedHexInfo.Raw = (OldHexInfo.Raw & ~InBitMask) | (InHexInfo & InBitMask);
+			uint16 OldHexInfo = HxlbPackedData::FColorConverter16(SurfaceData[0]).Raw;
+			uint16 UpdatedHexInfo;
+			UpdatedHexInfo = (OldHexInfo & ~InBitMask) | (InHexInfo & InBitMask);
 			
 			FUpdateTextureRegion2D RegionData(InPixelCoords.X, InPixelCoords.Y, 0, 0, 1, 1);
 			uint8* RawData = reinterpret_cast<uint8*>(&UpdatedHexInfo);

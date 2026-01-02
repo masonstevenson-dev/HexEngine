@@ -75,7 +75,32 @@ namespace HxlbPackedData
 			R = InR;
 			G = InG;
 		}
+		
+		// Moved to FColorConverter16
+		/*
 		FHexInfo(const FColor Color)
+		{
+			R = Color.R;
+			G = Color.G;
+		}*/
+	};
+	
+	// More generic way to convert from FColor to uint16
+	struct FColorConverter16
+	{
+		// Data
+		union 
+		{
+			struct
+			{
+				uint8 R;
+				uint8 G;
+			};
+			uint16 Raw;
+		};
+
+		// Constructors
+		FColorConverter16(const FColor Color)
 		{
 			R = Color.R;
 			G = Color.G;
