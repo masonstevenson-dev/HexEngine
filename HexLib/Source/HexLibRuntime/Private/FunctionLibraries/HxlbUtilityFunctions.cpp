@@ -31,7 +31,12 @@
 
 #include "FunctionLibraries/HxlbUtilityFunctions.h"
 
+#include "HexLibRuntimeLoggingDefs.h"
 #include "Foundation/HxlbHexIterators.h"
+#include "FunctionLibraries/HxlbMath.h"
+#include "Macros/HexLibLoggingMacros.h"
+
+using HexMath = UHxlbMath;
 
 TArray<FIntPoint> UHxlbUtilityFunctions::GetHexesInRange(FIntPoint CenterHex, int32 Range)
 {
@@ -67,6 +72,64 @@ TArray<FIntPoint> UHxlbUtilityFunctions::GetHexRectangleFromCorners(FIntPoint St
 	while (Iterator.Next())
 	{
 		Hexes.Add(Iterator.Get());
+	}
+	
+	return Hexes;
+}
+
+TArray<FIntPoint> UHxlbUtilityFunctions::SimpleRadiusIntersection(FVector Origin, double Radius, double HexSize)
+{
+	TArray<FIntPoint> Hexes;
+	
+	FIntPoint OriginHex = HexMath::WorldToAxial(Origin, HexSize);
+	Hexes.Add(OriginHex);
+	
+	bool ContinueSearch = true;
+	int32 SearchRadius = 1;
+
+	while (ContinueSearch)
+	{
+		int32 Hits = 0;
+		
+		auto Iterator = FHxlbRingIterator(OriginHex, SearchRadius);
+		while (Iterator.Next())
+		{
+			FIntPoint HexCoord = Iterator.Get();
+			
+			// for each hex, first check if its center coord overlaps with the circle. If it does, we are done. Otherwise,
+			// check each corner for overlap.
+			double Dist = FVector::DistXY(Origin, HexMath::AxialToWorld(HexCoord, HexSize));
+			if (Dist <= Radius)
+			{
+				// HXLB_LOG(LogHxlbRuntime, Warning, TEXT("Radius: %.2lf Dist: %.2lf"), Radius, Dist);
+				
+				Hits += 1;
+				Hexes.Add(HexCoord);
+				continue;
+			}
+			
+			for (int CornerIndex = 0; CornerIndex < 6; CornerIndex++)
+			{
+				FVector CurrentCorner = HexMath::GetHexCorner(HexMath::AxialToWorld(HexCoord, HexSize), HexSize, CornerIndex);
+				
+				if (FVector::DistXY(Origin, CurrentCorner) <= Radius)
+				{
+					Hits += 1;
+					Hexes.Add(HexCoord);
+					break;
+				}
+			}
+		}
+	
+		// When we find an entire ring of hexes that do not overlap, we are done.
+		if (Hits == 0)
+		{
+			ContinueSearch = false;
+		}
+		else
+		{
+			SearchRadius++;
+		}
 	}
 	
 	return Hexes;

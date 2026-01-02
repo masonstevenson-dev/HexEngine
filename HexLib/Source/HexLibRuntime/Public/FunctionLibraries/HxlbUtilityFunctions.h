@@ -35,7 +35,7 @@
 #include "HxlbUtilityFunctions.generated.h"
 
 UCLASS()
-class UHxlbUtilityFunctions : public UBlueprintFunctionLibrary
+class HEXLIBRUNTIME_API UHxlbUtilityFunctions : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
 
@@ -48,4 +48,8 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Hex Utilities")
 	static TArray<FIntPoint> GetHexRectangleFromCorners(FIntPoint StartCorner, FIntPoint EndCorner);
+	
+	// Returns all hexes that intersect the circle defined by the given origin and radium
+	UFUNCTION(BlueprintCallable, Category="Hex Utilities|Intersections")
+	static TArray<FIntPoint> SimpleRadiusIntersection(FVector Origin, double Radius, double HexSize);
 };
