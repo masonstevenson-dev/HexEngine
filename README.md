@@ -2,7 +2,7 @@
 
 Author: Mason Stevenson
 
-[https://masonstevenson.dev](https://masonstevenson.dev/)
+[https://masonstevenson-dev.github.io/](https://masonstevenson-dev.github.io/)
 
 <br>
 
