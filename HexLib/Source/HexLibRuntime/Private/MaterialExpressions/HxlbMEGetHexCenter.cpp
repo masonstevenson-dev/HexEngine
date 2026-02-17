@@ -32,7 +32,6 @@
 #include "MaterialExpressions/HxlbMEGetHexCenter.h"
 
 #include "MaterialCompiler.h"
-#include "MaterialHLSLGenerator.h"
 #include "Materials/MaterialExpressionCustom.h"
 
 #define LOCTEXT_NAMESPACE "HexMataterial_GetHexCenter"
@@ -88,33 +87,6 @@ int32 UHxlbMEGetHexCenter::Compile(class FMaterialCompiler* Compiler, int32 Outp
 	
 	return Compiler->CustomExpression(InternalExpression, 0, Inputs);
 }
-
-// TODO(): Uncomment if the new HLSL generator ever becomes the default.
-/*
-bool UHxlbMEGetHexCenter::GenerateHLSLExpression(FMaterialHLSLGenerator& Generator, UE::HLSLTree::FScope& Scope, int32 OutputIndex, UE::HLSLTree::FExpression const*& OutExpression) const
-{
-	if (!InternalExpression)
-	{
-		return Generator.Errorf(TEXT("Internal expression is null."));
-	}
-
-	if (HexOrientation == EHexOrientation::Pointy)
-	{
-		InternalExpression->Code =
-			TEXT(R"(
-				return P_GetHexCenter(WorldCoord, HexSize).xy;
-			)");
-	}
-	else
-	{
-		return Generator.Errorf(TEXT("Unsupported hex orientation: %s"), *UEnum::GetValueAsString(HexOrientation));
-	}
-
-	InternalExpression->Inputs[0].Input = FExpressionInput();
-	InternalExpression->Inputs[1].Input = FExpressionInput();
-
-	return InternalExpression->GenerateHLSLExpression(Generator, Scope, OutputIndex, OutExpression);
-}*/
 
 void UHxlbMEGetHexCenter::GetCaption(TArray<FString>& OutCaptions) const
 {

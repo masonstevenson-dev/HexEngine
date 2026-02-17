@@ -172,7 +172,7 @@ public:
 		REGISTER_TEST_SUITE_FN(Test_AxialToTexture_PixelCoordsOutOfBounds_BufferOverride);
 	}
 	
-	virtual uint32 GetTestFlags() const override
+	virtual EAutomationTestFlags GetTestFlags() const override
 	{
 		return EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter;
 	}
