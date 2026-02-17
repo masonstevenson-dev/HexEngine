@@ -2,7 +2,6 @@
   "FileVersion": 3,
   "Version": 2,
   "VersionName": "0.0.2",
-  "EngineVersion": "5.4.0",
   "FriendlyName": "Hex Engine",
   "Description": "Custom editor tools for designing hexagonal maps",
   "Category": "Hex Engine",
