@@ -65,11 +65,11 @@ public class HexLibEditor : ModuleRules
 			{
 				// Core Dependencies (Epic)
 				"Core",
+				"CoreUObject",
 				"EditorSubsystem",
 				"InteractiveToolsFramework",
 				"ModelingComponents",
 				"SlateCore",
-				"StructUtils",
 				
 				// Hexlib Dependencies
 				"HexLibRuntime",

@@ -625,7 +625,8 @@ void UHxlbHexMapComponent::RefreshGridlines()
 				return;
 			}
 			
-			const FTexture2DRHIRef TextureRHI = RTResource->GetTexture2DRHI();
+			// FTexture2DRHIRef
+			FRHITexture* TextureRHI = RTResource->GetTexture2DRHI();
 			const int32 BlockBytes = GPixelFormats[TextureRHI->GetFormat()].BlockBytes;
 			if (BlockBytes != sizeof(HxlbPackedData::FHexInfo))
 			{
@@ -740,7 +741,7 @@ void UHxlbHexMapComponent::WriteHexInfo_Bulk16(UTextureRenderTarget2D* PerHexDat
 				return;
 			}
 			
-			const FTexture2DRHIRef TextureRHI = RTResource->GetTexture2DRHI();
+			FRHITexture* TextureRHI = RTResource->GetTexture2DRHI();
 			const int32 BlockBytes = GPixelFormats[TextureRHI->GetFormat()].BlockBytes;
 			if (BlockBytes != sizeof(uint16))
 			{
@@ -852,7 +853,7 @@ void UHxlbHexMapComponent::WriteHexInfo_16(UTextureRenderTarget2D* PerHexDataRT,
 				return;
 			}
 			
-			const FTexture2DRHIRef TextureRHI = RTResource->GetTexture2DRHI();
+			FRHITexture* TextureRHI = RTResource->GetTexture2DRHI();
 			const int32 BlockBytes = GPixelFormats[TextureRHI->GetFormat()].BlockBytes;
 			if (BlockBytes != sizeof(uint16))
 			{

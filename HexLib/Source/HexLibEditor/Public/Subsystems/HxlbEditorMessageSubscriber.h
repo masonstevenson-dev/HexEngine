@@ -30,7 +30,7 @@
 // ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #pragma once
-#include "InstancedStruct.h"
+#include "StructUtils/InstancedStruct.h"
 #include "UObject/Interface.h"
 
 #include "HxlbEditorMessageSubscriber.generated.h"

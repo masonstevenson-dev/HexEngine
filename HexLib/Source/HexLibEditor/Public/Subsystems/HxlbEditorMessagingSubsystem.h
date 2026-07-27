@@ -30,9 +30,10 @@
 // ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #pragma once
+#include "Editor.h"
 #include "EditorSubsystem.h"
 #include "HxlbEditorMessageSubscriber.h"
-#include "InstancedStruct.h"
+#include "StructUtils/InstancedStruct.h"
 
 #include "HxlbEditorMessagingSubsystem.generated.h"
 
